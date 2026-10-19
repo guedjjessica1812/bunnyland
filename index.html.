@@ -1,1 +1,147 @@
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import { sendPushNotification } from 'npm:@mmmike/web-push/send';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
+  status, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+});
+
+type PushEvent = 'topic' | 'reply' | 'forum_topic' | 'forum_reply' | 'hanagram_post';
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const publicKey = Deno.env.get('VAPID_PUBLIC_KEY');
+  const privateKey = Deno.env.get('VAPID_PRIVATE_KEY');
+  const subject = Deno.env.get('VAPID_SUBJECT');
+  if (!supabaseUrl || !anonKey || !serviceRoleKey || !publicKey || !privateKey || !subject) {
+    return json({ error: 'Configuration serveur incomplète.' }, 500);
+  }
+
+  const authHeader = req.headers.get('Authorization') || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  if (!token) return json({ error: 'Authentification requise.' }, 401);
+  const authClient = createClient(supabaseUrl, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data: authData, error: authError } = await authClient.auth.getUser(token);
+  const user = authData?.user;
+  if (authError || !user) return json({ error: 'Session invalide.' }, 401);
+
+  let input: { eventType?: string; topicId?: string; replyId?: string };
+  try { input = await req.json(); } catch { return json({ error: 'Corps JSON invalide.' }, 400); }
+  const eventType = input.eventType as PushEvent | undefined;
+  const topicId = String(input.topicId || '');
+  const replyId = String(input.replyId || '');
+  const allowedEvents: PushEvent[] = ['topic', 'reply', 'forum_topic', 'forum_reply', 'hanagram_post'];
+  if (!allowedEvents.includes(eventType as PushEvent) || !topicId) return json({ error: 'Événement invalide.' }, 400);
+  if ((eventType === 'reply' || eventType === 'forum_reply') && !replyId) {
+    return json({ error: 'Identifiant de réponse manquant.' }, 400);
+  }
+
+  const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  let notificationTitle = 'Hanamori';
+  let notificationBody = 'Une nouveauté est disponible.';
+  let destination = './';
+  const getCharacterName = async (characterId: string | null | undefined) => {
+    if (!characterId) return 'Un personnage';
+    const { data } = await admin.from('characters').select('name').eq('id', characterId).maybeSingle();
+    return String(data?.name || 'Un personnage');
+  };
+
+  if (eventType === 'topic') {
+    const { data: topic, error } = await admin.from('sms_open_topics').select('id,title,author_user_id,author_character_id').eq('id', topicId).maybeSingle();
+    if (error) return json({ error: 'Impossible de vérifier le sujet SMS.' }, 500);
+    if (!topic || String(topic.author_user_id) !== String(user.id)) return json({ error: 'Sujet non autorisé.' }, 403);
+    const characterName = await getCharacterName(topic.author_character_id);
+    notificationTitle = `Hanamori · ${characterName}`;
+    notificationBody = `a lancé une conversation : « ${String(topic.title || 'Sans titre').slice(0, 100)} »`;
+    destination = './#sms';
+  } else if (eventType === 'reply') {
+    const { data: reply, error: replyError } = await admin.from('sms_open_replies')
+      .select('id,topic_id,author_user_id,author_character_id').eq('id', replyId).maybeSingle();
+    if (replyError) return json({ error: 'Impossible de vérifier la réponse SMS.' }, 500);
+    if (!reply || String(reply.topic_id) !== topicId || String(reply.author_user_id) !== String(user.id)) {
+      return json({ error: 'Réponse non autorisée ou introuvable.' }, 403);
+    }
+    const { data: topic, error: topicError } = await admin.from('sms_open_topics').select('id,title').eq('id', topicId).maybeSingle();
+    if (topicError) return json({ error: 'Impossible de vérifier le sujet SMS.' }, 500);
+    if (!topic) return json({ error: 'Sujet SMS introuvable.' }, 404);
+    const characterName = await getCharacterName(reply.author_character_id);
+    notificationTitle = `Hanamori · ${characterName}`;
+    notificationBody = `a répondu dans « ${String(topic.title || 'Sans titre').slice(0, 100)} »`;
+    destination = './#sms';
+  } else if (eventType === 'forum_topic') {
+    const { data: topic, error } = await admin.from('forum_topics').select('id,title,author_id').eq('id', topicId).maybeSingle();
+    if (error) return json({ error: 'Impossible de vérifier le sujet RP.' }, 500);
+    if (!topic || String(topic.author_id) !== String(user.id)) return json({ error: 'Sujet RP non autorisé.' }, 403);
+    const { data: firstPost } = await admin.from('forum_posts').select('character_id').eq('topic_id', topicId).order('created_at', { ascending: true }).limit(1).maybeSingle();
+    const characterName = await getCharacterName(firstPost?.character_id);
+    notificationTitle = `Hanamori · ${characterName}`;
+    notificationBody = `a ouvert un nouveau RP : « ${String(topic.title || 'Sans titre').slice(0, 100)} »`;
+    destination = `./?openTopic=${encodeURIComponent(topicId)}#forum`;
+  } else if (eventType === 'forum_reply') {
+    const { data: post, error: postError } = await admin.from('forum_posts')
+      .select('id,topic_id,author_id,character_id').eq('id', replyId).maybeSingle();
+    if (postError) return json({ error: 'Impossible de vérifier la réponse RP.' }, 500);
+    if (!post || String(post.topic_id) !== topicId || String(post.author_id) !== String(user.id)) {
+      return json({ error: 'Réponse RP non autorisée ou introuvable.' }, 403);
+    }
+    const { data: topic, error: topicError } = await admin.from('forum_topics').select('id,title').eq('id', topicId).maybeSingle();
+    if (topicError) return json({ error: 'Impossible de vérifier le sujet RP.' }, 500);
+    if (!topic) return json({ error: 'Sujet RP introuvable.' }, 404);
+    const characterName = await getCharacterName(post.character_id);
+    notificationTitle = `Hanamori · ${characterName}`;
+    notificationBody = `a répondu dans « ${String(topic.title || 'Sans titre').slice(0, 100)} »`;
+    destination = `./?openTopic=${encodeURIComponent(topicId)}&openPost=${encodeURIComponent(replyId)}#forum`;
+  } else if (eventType === 'hanagram_post') {
+    const { data: post, error } = await admin.from('hanagram_posts').select('id,author_id,character_id,caption').eq('id', topicId).maybeSingle();
+    if (error) return json({ error: 'Impossible de vérifier la publication Hanagram.' }, 500);
+    if (!post || String(post.author_id) !== String(user.id)) return json({ error: 'Publication non autorisée.' }, 403);
+    const characterName = await getCharacterName(post.character_id);
+    notificationTitle = `Hanamori · ${characterName}`;
+    const caption = String(post.caption || '').trim();
+    notificationBody = caption ? `a publié sur Hanagram : ${caption.slice(0, 100)}` : 'vient de publier sur Hanagram.';
+    destination = './#instagram';
+  }
+
+  // Inclut aussi les autres appareils du compte qui publie (par exemple l'iPhone
+  // si la publication est faite sur l'ordinateur). Chaque appareil abonné reçoit son push.
+  const { data: subscriptions, error: subscriptionsError } = await admin.from('push_subscriptions')
+    .select('user_id,endpoint,p256dh,auth');
+  if (subscriptionsError) return json({ error: 'Impossible de lire les abonnements.' }, 500);
+  if (!subscriptions?.length) return json({ sent: 0, failed: 0, message: 'Aucun appareil abonné.' });
+
+  let sent = 0;
+  let failed = 0;
+  for (const sub of subscriptions) {
+    try {
+      await sendPushNotification(
+        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+        {
+          title: notificationTitle,
+          body: notificationBody,
+          tag: `hanamori-${eventType}-${topicId}`,
+          data: { url: destination, topicId, replyId: replyId || null, eventType },
+        },
+        { publicKey, privateKey, subject },
+      );
+      sent++;
+    } catch (err) {
+      failed++;
+      const status = Number((err as { statusCode?: number })?.statusCode || 0);
+      if (status === 404 || status === 410) {
+        await admin.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
+      }
+      console.error('Échec envoi push', status, String(err));
+    }
+  }
+  return json({ sent, failed, eventType });
+});
 
