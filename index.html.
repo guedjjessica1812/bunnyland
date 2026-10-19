@@ -1,147 +1,31 @@
-import { createClient } from 'npm:@supabase/supabase-js@2';
-import { sendPushNotification } from 'npm:@mmmike/web-push/send';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
-  status, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-});
-
-type PushEvent = 'topic' | 'reply' | 'forum_topic' | 'forum_reply' | 'hanagram_post';
-
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
-  if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
-  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  const publicKey = Deno.env.get('VAPID_PUBLIC_KEY');
-  const privateKey = Deno.env.get('VAPID_PRIVATE_KEY');
-  const subject = Deno.env.get('VAPID_SUBJECT');
-  if (!supabaseUrl || !anonKey || !serviceRoleKey || !publicKey || !privateKey || !subject) {
-    return json({ error: 'Configuration serveur incomplète.' }, 500);
-  }
-
-  const authHeader = req.headers.get('Authorization') || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  if (!token) return json({ error: 'Authentification requise.' }, 401);
-  const authClient = createClient(supabaseUrl, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: authData, error: authError } = await authClient.auth.getUser(token);
-  const user = authData?.user;
-  if (authError || !user) return json({ error: 'Session invalide.' }, 401);
-
-  let input: { eventType?: string; topicId?: string; replyId?: string };
-  try { input = await req.json(); } catch { return json({ error: 'Corps JSON invalide.' }, 400); }
-  const eventType = input.eventType as PushEvent | undefined;
-  const topicId = String(input.topicId || '');
-  const replyId = String(input.replyId || '');
-  const allowedEvents: PushEvent[] = ['topic', 'reply', 'forum_topic', 'forum_reply', 'hanagram_post'];
-  if (!allowedEvents.includes(eventType as PushEvent) || !topicId) return json({ error: 'Événement invalide.' }, 400);
-  if ((eventType === 'reply' || eventType === 'forum_reply') && !replyId) {
-    return json({ error: 'Identifiant de réponse manquant.' }, 400);
-  }
-
-  const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  let notificationTitle = 'Hanamori';
-  let notificationBody = 'Une nouveauté est disponible.';
-  let destination = './';
-  const getCharacterName = async (characterId: string | null | undefined) => {
-    if (!characterId) return 'Un personnage';
-    const { data } = await admin.from('characters').select('name').eq('id', characterId).maybeSingle();
-    return String(data?.name || 'Un personnage');
-  };
-
-  if (eventType === 'topic') {
-    const { data: topic, error } = await admin.from('sms_open_topics').select('id,title,author_user_id,author_character_id').eq('id', topicId).maybeSingle();
-    if (error) return json({ error: 'Impossible de vérifier le sujet SMS.' }, 500);
-    if (!topic || String(topic.author_user_id) !== String(user.id)) return json({ error: 'Sujet non autorisé.' }, 403);
-    const characterName = await getCharacterName(topic.author_character_id);
-    notificationTitle = `Hanamori · ${characterName}`;
-    notificationBody = `a lancé une conversation : « ${String(topic.title || 'Sans titre').slice(0, 100)} »`;
-    destination = './#sms';
-  } else if (eventType === 'reply') {
-    const { data: reply, error: replyError } = await admin.from('sms_open_replies')
-      .select('id,topic_id,author_user_id,author_character_id').eq('id', replyId).maybeSingle();
-    if (replyError) return json({ error: 'Impossible de vérifier la réponse SMS.' }, 500);
-    if (!reply || String(reply.topic_id) !== topicId || String(reply.author_user_id) !== String(user.id)) {
-      return json({ error: 'Réponse non autorisée ou introuvable.' }, 403);
-    }
-    const { data: topic, error: topicError } = await admin.from('sms_open_topics').select('id,title').eq('id', topicId).maybeSingle();
-    if (topicError) return json({ error: 'Impossible de vérifier le sujet SMS.' }, 500);
-    if (!topic) return json({ error: 'Sujet SMS introuvable.' }, 404);
-    const characterName = await getCharacterName(reply.author_character_id);
-    notificationTitle = `Hanamori · ${characterName}`;
-    notificationBody = `a répondu dans « ${String(topic.title || 'Sans titre').slice(0, 100)} »`;
-    destination = './#sms';
-  } else if (eventType === 'forum_topic') {
-    const { data: topic, error } = await admin.from('forum_topics').select('id,title,author_id').eq('id', topicId).maybeSingle();
-    if (error) return json({ error: 'Impossible de vérifier le sujet RP.' }, 500);
-    if (!topic || String(topic.author_id) !== String(user.id)) return json({ error: 'Sujet RP non autorisé.' }, 403);
-    const { data: firstPost } = await admin.from('forum_posts').select('character_id').eq('topic_id', topicId).order('created_at', { ascending: true }).limit(1).maybeSingle();
-    const characterName = await getCharacterName(firstPost?.character_id);
-    notificationTitle = `Hanamori · ${characterName}`;
-    notificationBody = `a ouvert un nouveau RP : « ${String(topic.title || 'Sans titre').slice(0, 100)} »`;
-    destination = `./?openTopic=${encodeURIComponent(topicId)}#forum`;
-  } else if (eventType === 'forum_reply') {
-    const { data: post, error: postError } = await admin.from('forum_posts')
-      .select('id,topic_id,author_id,character_id').eq('id', replyId).maybeSingle();
-    if (postError) return json({ error: 'Impossible de vérifier la réponse RP.' }, 500);
-    if (!post || String(post.topic_id) !== topicId || String(post.author_id) !== String(user.id)) {
-      return json({ error: 'Réponse RP non autorisée ou introuvable.' }, 403);
-    }
-    const { data: topic, error: topicError } = await admin.from('forum_topics').select('id,title').eq('id', topicId).maybeSingle();
-    if (topicError) return json({ error: 'Impossible de vérifier le sujet RP.' }, 500);
-    if (!topic) return json({ error: 'Sujet RP introuvable.' }, 404);
-    const characterName = await getCharacterName(post.character_id);
-    notificationTitle = `Hanamori · ${characterName}`;
-    notificationBody = `a répondu dans « ${String(topic.title || 'Sans titre').slice(0, 100)} »`;
-    destination = `./?openTopic=${encodeURIComponent(topicId)}&openPost=${encodeURIComponent(replyId)}#forum`;
-  } else if (eventType === 'hanagram_post') {
-    const { data: post, error } = await admin.from('hanagram_posts').select('id,author_id,character_id,caption').eq('id', topicId).maybeSingle();
-    if (error) return json({ error: 'Impossible de vérifier la publication Hanagram.' }, 500);
-    if (!post || String(post.author_id) !== String(user.id)) return json({ error: 'Publication non autorisée.' }, 403);
-    const characterName = await getCharacterName(post.character_id);
-    notificationTitle = `Hanamori · ${characterName}`;
-    const caption = String(post.caption || '').trim();
-    notificationBody = caption ? `a publié sur Hanagram : ${caption.slice(0, 100)}` : 'vient de publier sur Hanagram.';
-    destination = './#instagram';
-  }
-
-  // Inclut aussi les autres appareils du compte qui publie (par exemple l'iPhone
-  // si la publication est faite sur l'ordinateur). Chaque appareil abonné reçoit son push.
-  const { data: subscriptions, error: subscriptionsError } = await admin.from('push_subscriptions')
-    .select('user_id,endpoint,p256dh,auth');
-  if (subscriptionsError) return json({ error: 'Impossible de lire les abonnements.' }, 500);
-  if (!subscriptions?.length) return json({ sent: 0, failed: 0, message: 'Aucun appareil abonné.' });
-
-  let sent = 0;
-  let failed = 0;
-  for (const sub of subscriptions) {
-    try {
-      await sendPushNotification(
-        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-        {
-          title: notificationTitle,
-          body: notificationBody,
-          tag: `hanamori-${eventType}-${topicId}`,
-          data: { url: destination, topicId, replyId: replyId || null, eventType },
-        },
-        { publicKey, privateKey, subject },
-      );
-      sent++;
-    } catch (err) {
-      failed++;
-      const status = Number((err as { statusCode?: number })?.statusCode || 0);
-      if (status === 404 || status === 410) {
-        await admin.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
-      }
-      console.error('Échec envoi push', status, String(err));
-    }
-  }
-  return json({ sent, failed, eventType });
-});
-
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bunnyland — L'île entre les mondes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1a1025;--panel:#281831;--panel2:#35203f;--text:#fff3fb;--muted:#cbb4d0;--accent:#f0a0cb;--accent2:#c7a8ff;--line:#563960;--shadow:0 18px 55px #08040d66} [data-theme=light]{--bg:#fff6fb;--panel:#fff;--panel2:#f9e8f4;--text:#432944;--muted:#806884;--accent:#bd5d94;--accent2:#8662bf;--line:#ead3e7;--shadow:0 18px 45px #b889b522}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0%,#70416c55,transparent 40%),radial-gradient(ellipse at 90% 20%,#6251a044,transparent 35%),var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}button,input,textarea{font:inherit}button{cursor:pointer}.shell{max-width:1350px;margin:auto;padding:18px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:10px 0 20px;border-bottom:1px solid var(--line)}.brand{display:flex;gap:12px;align-items:center}.sigil{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#32172f;font-size:25px}.brand h1{font:600 27px 'Playfair Display';margin:0}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:3px}.nav{display:flex;gap:6px;flex-wrap:wrap}.nav button,.ghost,.primary{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 13px;border-radius:999px}.nav button.active,.primary{background:linear-gradient(120deg,var(--accent),var(--accent2));border-color:transparent;color:#2b1730;font-weight:700}.hero{padding:27px 0 18px;display:flex;align-items:end;justify-content:space-between;gap:18px}.eyebrow{color:var(--accent);letter-spacing:.18em;text-transform:uppercase;font-size:11px;font-weight:700}.hero h2{font:600 clamp(28px,4vw,44px) 'Playfair Display';margin:8px 0}.hero p{color:var(--muted);max-width:620px;line-height:1.6;margin:0}.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(260px,.8fr);gap:18px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:var(--shadow)}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.panel h3{font:600 22px 'Playfair Display';margin:0}.muted{color:var(--muted)}.map{position:relative;overflow:hidden;min-height:440px;border-radius:18px;border:1px solid var(--line);background:radial-gradient(ellipse at 50% 55%,#f2a8d51b,transparent 45%),linear-gradient(135deg,#281d40,#422749 50%,#1b2039)}[data-theme=light] .map{background:linear-gradient(135deg,#f6d7ed,#e9dafa 55%,#cce6ee)}.map:before{content:"";position:absolute;inset:0;background-image:radial-gradient(#fff9 1px,transparent 1.5px),radial-gradient(#f5b7df88 1px,transparent 1.5px);background-size:47px 47px,71px 71px;background-position:0 0,20px 18px;opacity:.5}.island{position:absolute;width:70%;height:73%;left:15%;top:13%;background:linear-gradient(135deg,#b3a3c0,#688d8b 55%,#a999bc);clip-path:polygon(28% 4%,48% 0,62% 10%,81% 8%,91% 24%,100% 43%,89% 59%,84% 78%,64% 88%,47% 100%,27% 88%,14% 75%,0 57%,8% 35%,13% 18%);filter:drop-shadow(0 10px 15px #0008)}.pin{position:absolute;z-index:2;transform:translate(-50%,-50%);border:1px solid #fff8;border-radius:12px;background:#25172ddd;color:#fff;padding:8px 10px;box-shadow:0 5px 15px #0004;font-size:12px;white-space:nowrap}.pin b{color:#f7b3dd;margin-right:5px}.map-caption{position:absolute;z-index:2;left:15px;bottom:14px;color:#fff;background:#24152cc9;padding:10px 12px;border-radius:12px;font-size:12px}.side{display:flex;flex-direction:column;gap:18px}.item{padding:12px 0;border-bottom:1px solid var(--line)}.item:last-child{border:0}.item strong{display:block}.item small{color:var(--muted)}.crest{display:flex;gap:12px;align-items:center}.crest-icon{width:44px;height:44px;border-radius:15px;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font-size:22px}.page{display:none}.page.active{display:block}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.card{padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}.card h4{font:600 20px 'Playfair Display';margin:7px 0}.pill{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;padding:5px 9px;color:var(--muted)}.form{display:grid;gap:10px}.form input,.form textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--text);padding:11px}.form textarea{min-height:85px}.row{display:flex;gap:9px;flex-wrap:wrap}.row>*{flex:1}.notice{border:1px dashed var(--line);border-radius:14px;padding:14px;color:var(--muted);line-height:1.55;margin-top:14px}.footer{color:var(--muted);text-align:center;padding:30px 0 15px;font-size:12px}.modal{position:fixed;inset:0;background:#09040dcc;display:none;place-items:center;padding:20px;z-index:10}.modal.open{display:grid}.modal-box{width:min(520px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 18px;display:none;z-index:20}.toast.show{display:block}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.map{min-height:380px}.hero{align-items:start;flex-direction:column}.nav{order:3;width:100%}.nav button{font-size:12px;padding:9px 10px}.shell{padding:12px}.panel{padding:13px}.pin{font-size:10px;padding:6px 7px}}
+</style></head><body><div class="shell">
+<header class="top"><div class="brand"><div class="sigil">☾</div><div><h1>Bunnyland</h1><small>L'île entre les mondes</small></div></div><nav class="nav"><button class="active" data-page="home">Accueil</button><button data-page="mapPage">Carte</button><button data-page="characters">Personnages</button><button data-page="families">Familles</button><button data-page="bunnygram">Bunnygram</button><button data-page="messages">Messages</button><button data-page="rp">RPs</button><button data-page="admin">Administration</button></nav><div class="row" style="flex:0 0 auto"><button class="ghost" id="themeBtn">☼ / ☾</button><button class="primary" id="loginBtn">Connexion</button></div></header>
+<main id="home" class="page active"><section class="hero"><div><div class="eyebrow">✦ Un monde à découvrir ✦</div><h2>Les étoiles ont leur propre histoire.</h2><p>Au large du Japon, une île abrite des familles singulières, des pouvoirs anciens et des secrets qui attendent d'être découverts.</p></div><button class="primary" data-goto="mapPage">Explorer l'île ↗</button></section><div class="grid"><section class="panel"><div class="panel-head"><h3>La carte de Bunnyland</h3><button class="ghost" data-goto="mapPage">Ouvrir la carte</button></div><div class="map" id="homeMap"><div class="island"></div><div class="map-caption">✦ Clique sur un lieu pour le modifier.</div></div></section><aside class="side"><section class="panel"><div class="panel-head"><h3>Nouvelles étoiles</h3><span class="pill">Personnages</span></div><div id="homeCharacters" class="muted">Les nouveaux visages apparaîtront ici.</div></section><section class="panel"><div class="panel-head"><h3>Maisons & lignées</h3><button class="ghost" data-goto="families">Voir tout</button></div><div id="homeFamilies"></div></section><section class="panel"><h3>Le grimoire</h3><p class="muted">Les secrets de l'île se dévoilent au fil des rencontres.</p></section></aside></div></main>
+<section id="mapPage" class="page"><section class="hero"><div><div class="eyebrow">Atlas céleste</div><h2>Explorer la carte</h2><p>Ajoute des lieux, change leur nom, leur description et leur position directement depuis le site.</p></div><button class="primary" id="addPlace">＋ Ajouter un lieu</button></section><section class="panel"><div class="map" id="fullMap" style="min-height:560px"><div class="island"></div><div class="map-caption">Clique sur un marqueur pour le modifier.</div></div></section><div class="notice">Maquette locale : les changements sont sauvegardés dans ce navigateur. Ils ne sont pas encore synchronisés entre comptes/appareils.</div></section>
+<section id="characters" class="page"><section class="hero"><div><div class="eyebrow">Les habitants</div><h2>Personnages</h2><p>Crée et modifie les fiches de personnages.</p></div><button class="primary" id="addCharacter">＋ Ajouter un personnage</button></section><div class="cards" id="characterCards"></div></section>
+<section id="families" class="page"><section class="hero"><div><div class="eyebrow">Héritages & alliances</div><h2>Familles</h2><p>Modifie les noms, emblèmes et descriptions des lignées.</p></div><button class="primary" id="addFamily">＋ Ajouter une famille</button></section><div class="cards" id="familyCards"></div></section>
+<section id="bunnygram" class="page"><section class="hero"><div><div class="eyebrow">Le fil de l'île</div><h2>Bunnygram</h2><p>Publications de démonstration. La version connectée partagera les contenus entre membres.</p></div></section><section class="panel"><form id="postForm" class="form"><input id="postAuthor" placeholder="Nom du personnage" required><textarea id="postText" placeholder="Quoi de neuf sur l'île ?" required></textarea><button class="primary">Publier</button></form><div id="posts" style="margin-top:18px"></div></section></section>
+<section id="messages" class="page"><section class="hero"><div><div class="eyebrow">Correspondances</div><h2>Messages</h2></div></section><section class="panel"><p class="muted">La messagerie privée n'est pas encore raccordée à Supabase. Cette maquette ne collecte ni n'envoie de messages privés.</p></section></section>
+<section id="rp" class="page"><section class="hero"><div><div class="eyebrow">Récits partagés</div><h2>Les RPs</h2><p>Un espace prévu pour les sujets et réponses RP.</p></div><button class="primary" id="newRp">＋ Nouveau sujet</button></section><section class="panel"><p class="muted">Les sujets RP seront partagés entre membres après raccordement à Supabase.</p></section></section>
+<section id="admin" class="page"><section class="hero"><div><div class="eyebrow">Atelier de l'île</div><h2>Administration</h2><p>Gère la carte, les familles et les fiches depuis les pages correspondantes.</p></div></section><div class="cards"><article class="card"><h4>Carte</h4><p class="muted">Ajouter, déplacer ou supprimer des lieux.</p><button class="ghost" data-goto="mapPage">Gérer la carte</button></article><article class="card"><h4>Familles</h4><p class="muted">Changer les noms, emblèmes et descriptions.</p><button class="ghost" data-goto="families">Gérer les familles</button></article><article class="card"><h4>Personnages</h4><p class="muted">Modifier les fiches et leurs pouvoirs.</p><button class="ghost" data-goto="characters">Gérer les personnages</button></article></div><div class="notice">Les modifications restent sur cet appareil dans cette première version. La synchronisation et les permissions d'administration nécessitent le raccordement à Supabase.</div></section><footer class="footer">Bunnyland · Un univers créé ensemble ✦</footer></div>
+<div class="modal" id="modal"><div class="modal-box"><div class="panel-head"><h3 id="modalTitle">Modifier</h3><button class="ghost" id="closeModal">✕</button></div><form id="modalForm" class="form"></form></div></div><div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const defaultFamilies=[{name:'Chang-Soene',emblem:'🌊',description:'Minyu Soene & Chang Sooyoung'},{name:'Im',emblem:'🐶',description:'Im Gaon & Son Yujin'},{name:'Mo',emblem:'💎',description:'Mo Garam & Lila Sawada'},{name:'Zhu-Chansiri',emblem:'🍓',description:'Zhu Jilpa & Chansiri Asnee'},{name:'Evans',emblem:'🗝️',description:'Evans Benjamin & Kenzo Evans'}];
+let families=JSON.parse(localStorage.getItem('bl_families')||'null')||defaultFamilies;let places=JSON.parse(localStorage.getItem('bl_places')||'null')||[{name:'Village des Brumes',icon:'✧',x:34,y:30,description:'Un village enveloppé de brume.'},{name:'Sanctuaire lunaire',icon:'☾',x:61,y:39,description:'Un sanctuaire ancien sous les étoiles.'},{name:'Centre-ville',icon:'⌂',x:48,y:61,description:'Le cœur animé de l’île.'},{name:'Jardin des lucioles',icon:'✿',x:69,y:68,description:'Un jardin qui s’illumine à la nuit tombée.'}];let characters=JSON.parse(localStorage.getItem('bl_characters')||'[]'),posts=JSON.parse(localStorage.getItem('bl_posts')||'[]');
+function save(){for(const [k,v] of Object.entries({families,places,characters,posts}))localStorage.setItem('bl_'+k,JSON.stringify(v))}function toast(s){$('#toast').textContent=s;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),2400)}function go(id){$$('.page').forEach(p=>p.classList.toggle('active',p.id===id));$$('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));window.scrollTo({top:0,behavior:'smooth'})}$$('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));$$('[data-goto]').forEach(b=>b.onclick=()=>go(b.dataset.goto));$('#themeBtn').onclick=()=>{let t=document.documentElement.dataset.theme==='light'?'dark':'light';document.documentElement.dataset.theme=t;localStorage.setItem('bl_theme',t)};if(localStorage.getItem('bl_theme')==='light')document.documentElement.dataset.theme='light';
+function openModal(title,fields,onSave,onDelete){$('#modalTitle').textContent=title;let f=$('#modalForm');f.innerHTML='';fields.forEach(([label,key,val,type='text'])=>{let l=document.createElement('label');l.className='muted';l.textContent=label;let inp=document.createElement(key==='description'||key==='bio'?'textarea':'input');inp.name=key;inp.value=val??'';inp.type=type;if(key==='name')inp.required=true;l.appendChild(inp);f.appendChild(l)});let row=document.createElement('div');row.className='row';let b=document.createElement('button');b.className='primary';b.textContent='Enregistrer';row.appendChild(b);if(onDelete){let d=document.createElement('button');d.type='button';d.className='ghost';d.textContent='Supprimer';d.onclick=()=>{if(confirm('Supprimer cet élément ?')){onDelete();$('#modal').classList.remove('open')}};row.appendChild(d)}f.appendChild(row);f.onsubmit=e=>{e.preventDefault();onSave(Object.fromEntries(new FormData(f)));$('#modal').classList.remove('open')};$('#modal').classList.add('open')}$('#closeModal').onclick=()=>$('#modal').classList.remove('open');
+function renderMap(){for(const id of ['homeMap','fullMap']){const el=$('#'+id);el.querySelectorAll('.pin').forEach(n=>n.remove());places.forEach((p,i)=>{if(id==='homeMap'&&i>3)return;let b=document.createElement('button');b.className='pin';b.style.left=p.x+'%';b.style.top=p.y+'%';b.innerHTML='<b>'+esc(p.icon||'✧')+'</b>'+esc(p.name);b.title=p.description||p.name;b.onclick=()=>editPlace(i);el.appendChild(b)})}}function editPlace(i){let p=places[i];openModal('Modifier le lieu',[['Nom','name',p.name],['Icône','icon',p.icon],['Description','description',p.description],['Position horizontale (0–100)','x',p.x,'number'],['Position verticale (0–100)','y',p.y,'number']],v=>{places[i]={...p,...v,x:Math.max(2,Math.min(98,+v.x)),y:Math.max(5,Math.min(95,+v.y))};save();render();toast('Lieu enregistré sur cet appareil.')},()=>{places.splice(i,1);save();render()})}$('#addPlace').onclick=()=>openModal('Ajouter un lieu',[['Nom','name',''],['Icône','icon','✧'],['Description','description',''],['Position horizontale (0–100)','x',50,'number'],['Position verticale (0–100)','y',50,'number']],v=>{places.push({...v,x:+v.x,y:+v.y});save();render();toast('Lieu ajouté sur cet appareil.')});
+$('#addFamily').onclick=()=>openModal('Ajouter une famille',[['Nom de famille','name',''],['Emblème','emblem','✦'],['Description','description','']],v=>{families.push(v);save();render();toast('Famille ajoutée.')});function editFamily(i){let f=families[i];openModal('Modifier la famille',[['Nom de famille','name',f.name],['Emblème','emblem',f.emblem],['Description','description',f.description]],v=>{families[i]=v;save();render();toast('Famille modifiée.')},()=>{families.splice(i,1);save();render()})}$('#addCharacter').onclick=()=>openModal('Ajouter un personnage',[['Nom','name',''],['Avatar (URL)','avatar',''],['Famille','family',''],['Pouvoirs','powers',''],['Biographie','bio','']],v=>{characters.unshift(v);save();render();toast('Personnage ajouté.')});function editCharacter(i){let c=characters[i];openModal('Modifier le personnage',[['Nom','name',c.name],['Avatar (URL)','avatar',c.avatar],['Famille','family',c.family],['Pouvoirs','powers',c.powers],['Biographie','bio',c.bio]],v=>{characters[i]=v;save();render()},()=>{characters.splice(i,1);save();render()})}
+function render(){renderMap();$('#familyCards').innerHTML=families.map((f,i)=>`<article class="card"><div class="crest"><div class="crest-icon">${esc(f.emblem)}</div><div><span class="pill">Lignée</span><h4>${esc(f.name)}</h4></div></div><p class="muted">${esc(f.description)}</p><button class="ghost" data-ef="${i}">Modifier</button></article>`).join('');$('#homeFamilies').innerHTML=families.slice(0,4).map(f=>`<div class="item crest"><div class="crest-icon">${esc(f.emblem)}</div><div><strong>${esc(f.name)}</strong><small>${esc(f.description)}</small></div></div>`).join('');$('#characterCards').innerHTML=characters.length?characters.map((c,i)=>`<article class="card">${c.avatar?`<img src="${esc(c.avatar)}" alt="" style="width:100%;height:150px;object-fit:cover;border-radius:12px">`:''}<span class="pill">${esc(c.family||'Sans famille')}</span><h4>${esc(c.name)}</h4><p class="muted">${esc(c.powers)}</p><p>${esc(c.bio)}</p><button class="ghost" data-ec="${i}">Modifier</button></article>`).join(''):'<div class="notice">Aucun personnage pour le moment. Ajoute une fiche avec le bouton ci-dessus.</div>';$('#homeCharacters').innerHTML=characters.slice(0,3).map(c=>`<div class="item"><strong>${esc(c.name)}</strong><small>${esc(c.family||'Nouvelle étoile')}</small></div>`).join('')||'Les nouveaux visages apparaîtront ici.';$('#posts').innerHTML=posts.map(p=>`<article class="card" style="margin-bottom:10px"><strong>${esc(p.author)}</strong><p>${esc(p.text)}</p><small class="muted">${esc(p.date)}</small></article>`).join('')||'<p class="muted">Le fil est encore calme…</p>';$$('[data-ef]').forEach(b=>b.onclick=()=>editFamily(+b.dataset.ef));$$('[data-ec]').forEach(b=>b.onclick=()=>editCharacter(+b.dataset.ec))}$('#postForm').onsubmit=e=>{e.preventDefault();posts.unshift({author:$('#postAuthor').value,text:$('#postText').value,date:new Date().toLocaleString('fr-FR')});save();render();$('#postForm').reset();toast('Publication ajoutée à cette maquette.')};$('#loginBtn').onclick=()=>openModal('Connexion — à relier à Supabase',[['E-mail','email','','email'],['Mot de passe','password','','password']],()=>toast('La connexion sera activée lors du raccordement Supabase.'));$('#newRp').onclick=()=>toast('Les sujets RP seront activés après raccordement Supabase.');render();
+</script></body></html>
