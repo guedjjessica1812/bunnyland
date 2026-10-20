@@ -576,6 +576,39 @@ html{background:#17131b}body{background:radial-gradient(ellipse at 50% -18%,#3b2
 }
 </style>
 
+
+<style id="bunnyland-topic-list-last-post-v2">
+.bunnyland-topic-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,300px) auto;gap:18px;align-items:center;cursor:pointer;padding:22px 24px!important;border-radius:18px!important;background:linear-gradient(120deg,#211923,#261b27)!important;border:1px solid #604457!important;color:#f4e6ef!important}
+.bunnyland-topic-row .topic-main{min-width:0}.bunnyland-topic-row h4{font-size:25px!important;margin-bottom:8px!important}.bunnyland-topic-row .topic-last-preview{margin-top:9px!important;color:#c9b8c8!important;overflow-wrap:anywhere}.topic-last{display:flex;align-items:center;gap:12px;min-width:0;border-left:1px solid #493744;padding-left:18px}.topic-last-avatar{width:58px;height:58px;flex:0 0 58px;object-fit:cover;border-radius:50%;border:2px solid #d9a7bb;background:#302334}.topic-last-placeholder{display:grid;place-items:center;color:#e5bfd0;font:24px Georgia,serif}.topic-last strong,.topic-last small,.topic-last time{display:block;overflow-wrap:anywhere}.topic-last strong{color:#f3dbe7;font-size:14px}.topic-last small,.topic-last time{color:#b9a6b8;font-size:11px;margin-top:4px}.topic-delete{border:1px solid #80516b;border-radius:999px;background:#352331;color:#f3c5d9;padding:9px 13px;cursor:pointer;white-space:nowrap}.topic-delete:hover{background:#4a2b3e;border-color:#d9a7bb}.topic-participants{display:flex;align-items:center;gap:6px;margin-top:12px;flex-wrap:wrap}.topic-participant{display:inline-flex;align-items:center;gap:6px;background:#302331;border:1px solid #493744;border-radius:999px;padding:4px 9px 4px 4px;color:#ead4df;font-size:11px}.topic-participant img,.topic-participant .topic-participant-placeholder{width:25px;height:25px;border-radius:50%;object-fit:cover;border:1px solid #d9a7bb;background:#302334}.topic-participant-placeholder{display:grid;place-items:center}.topic-reply-count{display:inline-block;margin-top:10px;padding:5px 9px;border-radius:999px;background:#3b2a38;color:#e4b8ca;font-size:11px}@media(max-width:760px){.bunnyland-topic-row{grid-template-columns:minmax(0,1fr);gap:13px}.topic-last{border-left:0;border-top:1px solid #493744;padding:12px 0 0}.topic-delete{justify-self:start}}
+</style>
+
+
+<style id="bunnyland-rp-harmony">
+/* Bunnyland RP: cartes plus compactes, lisibles et accordées au thème sombre */
+#topicList.topic-list{display:grid;gap:12px;margin-top:18px}
+#topicList .bunnyland-topic-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(210px, .48fr) auto;align-items:center;gap:20px;padding:18px 20px;border:1px solid #574052;border-radius:19px;background:linear-gradient(115deg,#211923 0%,#241a26 58%,#201821 100%);box-shadow:0 7px 22px #09070d25;cursor:pointer;transition:border-color .18s,transform .18s,box-shadow .18s;min-width:0}
+#topicList .bunnyland-topic-row:hover{transform:translateY(-1px);border-color:#b47b9b;box-shadow:0 10px 26px #08060d45}
+#topicList .topic-main{min-width:0}
+#topicList .topic-main h4{font:600 21px/1.25 'Playfair Display',Georgia,serif;color:#f5eaf1;margin:0 0 9px;overflow-wrap:anywhere}
+#topicList .topic-main>p:not(.topic-last-preview){display:none}
+#topicList .topic-meta{color:#b7a9b8;font-size:11px;margin:0 0 9px}
+#topicList .topic-participants{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 8px}
+#topicList .topic-participant{display:inline-flex;align-items:center;gap:6px;background:#342532;border:1px solid #4d394b;color:#ead7e3;border-radius:999px;padding:4px 9px 4px 5px;font-size:11px;line-height:1.2}
+#topicList .topic-participant img,#topicList .topic-participant-placeholder{width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid #d99ab9;background:#302232;color:#f0c7dc;display:grid;place-items:center;flex:none}
+#topicList .topic-reply-count{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 9px;background:#392738;color:#eac0d5;font-size:11px;font-weight:700;margin:0 0 7px}
+#topicList .topic-last-preview{color:#d2c6d3;font-size:12px;line-height:1.55;margin:0;max-width:680px;overflow-wrap:anywhere}
+#topicList .topic-last{display:flex;align-items:center;gap:11px;min-width:0;padding-left:17px;border-left:1px solid #514052}
+#topicList .topic-last-avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;border:2px solid #d99ab9;box-shadow:0 0 0 3px #d99ab91b;flex:none}
+#topicList .topic-last-placeholder{display:grid;place-items:center;background:#392738;color:#f0c7dc;font:600 22px 'Playfair Display',serif}
+#topicList .topic-last>div{display:grid;gap:3px;min-width:0}
+#topicList .topic-last strong{font-size:13px;color:#f0c7dc;overflow-wrap:anywhere}
+#topicList .topic-last small{font-size:10px;color:#b6a5b7}
+#topicList .topic-last time{font-size:11px;color:#d0c1d1;font-variant-numeric:tabular-nums}
+#topicList .topic-delete{border:1px solid #81506e;border-radius:999px;background:#342431;color:#f0c4d8;font-size:11px;font-weight:700;padding:9px 12px;white-space:nowrap;transition:background .18s,border-color .18s}
+#topicList .topic-delete:hover{background:#573044;border-color:#d08cad}
+@media(max-width:850px){#topicList .bunnyland-topic-row{grid-template-columns:minmax(0,1fr) minmax(180px,.55fr);gap:13px;padding:16px}#topicList .topic-last{padding-left:12px}#topicList .topic-delete{grid-column:1/-1;justify-self:start;margin-left:0}}
+@media(max-width:560px){#topicList.topic-list{gap:10px}#topicList .bunnyland-topic-row{grid-template-columns:minmax(0,1fr);gap:12px;padding:15px;border-radius:15px}#topicList .topic-main h4{font-size:19px}#topicList .topic-last{border-left:0;border-top:1px solid #493747;padding:12px 0 0}#topicList .topic-last-avatar{width:43px;height:43px}#topicList .topic-delete{grid-column:auto;width:100%;padding:10px}#topicList .topic-participant{font-size:10px}}
+</style>
 </head>
 <body>
 <div class="shell">
@@ -1213,8 +1246,49 @@ html{background:#17131b}body{background:radial-gradient(ellipse at 50% -18%,#3b2
     if(!familyIds.length){$('topicList').innerHTML='<div class="notice error">Impossible de retrouver l’identifiant de cette famille.</div>';return;}
     const {data,error}=await supabase.from('rp_topics').select('id,family_id,author_id,title,created_at').in('family_id',familyIds).order('created_at',{ascending:false});
     if(error){$('topicList').innerHTML=`<div class="notice error">Impossible de charger les RP de cette famille : ${esc(error.message)}</div>`;return;}
-    $('topicList').innerHTML=(data||[]).map(t=>`<article class="topic-card" data-topic="${esc(t.id)}"><h4>${esc(t.title)}</h4><p>Ouvrir la discussion et lire les réponses.</p><div class="topic-meta">Sujet créé : ${esc(t.created_at?new Date(t.created_at).toLocaleDateString('fr-FR'):'Date inconnue')}</div></article>`).join('')||'<div class="empty"><strong>Le premier chapitre reste à écrire…</strong>Aucun RP dans cette famille pour le moment. Connecte-toi pour en créer un.</div>';
-    $('topicList').querySelectorAll('[data-topic]').forEach(el=>el.addEventListener('click',()=>loadPosts(el.dataset.topic)));
+    const topics=data||[];
+    // Récupère les messages pour afficher le dernier participant, son portrait et l'heure de sa réponse.
+    // Récupère les réponses sans supposer que toutes les colonnes facultatives existent.
+    let postsByTopic=new Map(), allPostsByTopic=new Map(), characterMap=new Map(), profileMap=new Map();
+    if(topics.length){
+      const {data:rpRows,error:rpError}=await supabase.from('rp_posts').select('*').in('topic_id',topics.map(t=>t.id)).order('created_at',{ascending:false});
+      if(rpError){$('topicList').innerHTML=`<div class="notice error">Les sujets sont chargés, mais les réponses ne peuvent pas être lues : ${esc(rpError.message)}</div>`;return;}
+      for(const post of (rpRows||[])){
+        const key=String(post.topic_id);
+        if(!allPostsByTopic.has(key))allPostsByTopic.set(key,[]);
+        allPostsByTopic.get(key).push(post);
+        if(!postsByTopic.has(key))postsByTopic.set(key,post);
+      }
+      const characterIds=[...new Set((rpRows||[]).map(p=>p.character_id).filter(Boolean).map(String))];
+      const profileIds=[...new Set((rpRows||[]).map(p=>p.author_id).filter(Boolean).map(String))];
+      if(characterIds.length){const {data:cs}=await supabase.from('characters').select('*').in('id',characterIds);characterMap=new Map((cs||[]).map(c=>[String(c.id),c]));}
+      if(profileIds.length){const {data:ps}=await supabase.from('profiles').select('*').in('id',profileIds);profileMap=new Map((ps||[]).map(a=>[String(a.id),a]));}
+    }
+    const canModerate=['admin','moderator'].includes(String(myProfile?.role||'').toLowerCase());
+    const charName=c=>c?.name||c?.character_name||c?.display_name||'';
+    const charAvatar=c=>c?.image_url||c?.avatar_url||c?.avatar||c?.photo_url||c?.portrait_url||c?.cover_image||c?.image||'';
+    const profileName=profile=>profile?.display_name||profile?.username||profile?.pseudo||profile?.name||'';
+    const profileAvatar=profile=>profile?.avatar_url||profile?.avatar||profile?.photo_url||profile?.image_url||'';
+    $('topicList').innerHTML=topics.map(t=>{
+      const posts=allPostsByTopic.get(String(t.id))||[];
+      const last=postsByTopic.get(String(t.id));
+      const c=last?.character_id?characterMap.get(String(last.character_id)):null;
+      const profile=last?.author_id?profileMap.get(String(last.author_id)):null;
+      const lastName=charName(c)||profileName(profile)||'Membre';
+      const lastAvatar=charAvatar(c)||profileAvatar(profile);
+      const avatarHtml=lastAvatar?`<img class="topic-last-avatar" src="${esc(lastAvatar)}" alt="Portrait de ${esc(lastName)}" loading="lazy">`:`<span class="topic-last-avatar topic-last-placeholder">${esc((lastName||'？').charAt(0).toUpperCase())}</span>`;
+      const when=last?.created_at?new Date(last.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Aucune réponse';
+      const canDelete=!!session&&(String(t.author_id)===String(session.user.id)||canModerate);
+      const rawContent=last?.content??last?.body??'';
+      const preview=rawContent?String(rawContent).replace(/\s+/g,' ').slice(0,150):'Aucun message pour le moment.';
+      const uniqueCharacters=[];const seenCharacters=new Set();
+      for(const post of posts){const character=post.character_id?characterMap.get(String(post.character_id)):null;const name=charName(character)||profileName(profileMap.get(String(post.author_id)))||'Membre';const key=post.character_id?String(post.character_id):'user:'+String(post.author_id);if(!seenCharacters.has(key)){seenCharacters.add(key);uniqueCharacters.push({key,name,avatar:charAvatar(character)||profileAvatar(profileMap.get(String(post.author_id)))});}}
+      const participantHtml=uniqueCharacters.slice(0,5).map(person=>`<span class="topic-participant">${person.avatar?`<img src="${esc(person.avatar)}" alt="" loading="lazy">`:`<span class="topic-participant-placeholder">${esc(person.name.charAt(0).toUpperCase())}</span>`}${esc(person.name)}</span>`).join('');
+      const replyCount=Math.max(0,posts.length-1);
+      return `<article class="topic-card bunnyland-topic-row" data-topic="${esc(t.id)}"><div class="topic-main"><h4>${esc(t.title)}</h4><p>Ouvrir la discussion et lire les réponses.</p><div class="topic-meta">Sujet créé : ${esc(t.created_at?new Date(t.created_at).toLocaleDateString('fr-FR'):'Date inconnue')}</div><div class="topic-participants">${participantHtml||'<span class="topic-meta">Participants à afficher après leur première réponse</span>'}</div><span class="topic-reply-count">${replyCount} réponse${replyCount===1?'':'s'}</span><p class="topic-last-preview">${esc(preview)}${rawContent&&String(rawContent).length>150?'…':''}</p></div><div class="topic-last">${avatarHtml}<div><strong>${esc(lastName)}</strong><small>Dernier message</small><time>${esc(when)}</time></div></div>${canDelete?`<button type="button" class="topic-delete" data-delete-topic="${esc(t.id)}" aria-label="Supprimer le RP ${esc(t.title)}">Supprimer le RP</button>`:''}</article>`;
+    }).join('')||'<div class="empty"><strong>Le premier chapitre reste à écrire…</strong>Aucun RP dans cette famille pour le moment. Connecte-toi pour en créer un.</div>';
+    $('topicList').querySelectorAll('[data-topic]').forEach(el=>el.addEventListener('click',e=>{if(e.target.closest('[data-delete-topic]'))return;loadPosts(el.dataset.topic);}));
+    $('topicList').querySelectorAll('[data-delete-topic]').forEach(btn=>btn.addEventListener('click',async e=>{e.stopPropagation();await deleteRpTopic(btn.dataset.deleteTopic);}));
   }
 
   async function loadPosts(topicId){
@@ -1243,7 +1317,7 @@ html{background:#17131b}body{background:radial-gradient(ellipse at 50% -18%,#3b2
       const heartCount=postReactions.filter(r=>r.reaction==='heart').length;
       const liked=!!session&&postReactions.some(r=>String(r.user_id)===String(session.user.id)&&r.reaction==='heart');
       const canManage=!!session&&(String(p.author_id)===String(session.user.id)||['admin','moderator'].includes(String(myProfile?.role||'').toLowerCase()));
-      return `<article class="post-card" data-rp-post-card="${esc(p.id)}"><aside class="post-character">${avatarHtml}<strong>${esc(name)}</strong><small>${esc(face)}</small></aside><div class="post-content"><div class="post-author"><span>${esc(name)}</span><time>${esc(new Date(p.created_at).toLocaleString('fr-FR'))}</time></div><div class="rp-post-body" data-rp-post-body="${esc(p.id)}"><p style="white-space:pre-wrap">${safeBody}</p></div><div class="rp-post-tools"><button type="button" class="rp-heart ${liked?'liked':''}" data-rp-heart="${esc(p.id)}" aria-pressed="${liked?'true':'false'}">${liked?'♥':'♡'} J’aime</button><span class="rp-heart-count" data-rp-heart-count="${esc(p.id)}">${heartCount?heartCount+' j’aime':'Soyez le premier à aimer'}</span>${canManage?`<button type="button" data-rp-edit="${esc(p.id)}">Modifier</button><button type="button" data-rp-delete="${esc(p.id)}">Supprimer</button>`:''}</div></div></article>`;
+      return `<article class="post-card bunnyland-rp-editorial" data-rp-post-card="${esc(p.id)}"><aside class="post-character">${avatarHtml}<strong>${esc(name)}</strong><small>${esc(face)}</small></aside><div class="post-content"><div class="post-kicker"><span>✿ BUNNYLAND · RP</span><span class="post-number">${String(posts.indexOf(p)+1).padStart(2,'0')}</span></div><div class="post-author"><span>${esc(name)}</span><time>${esc(new Date(p.created_at).toLocaleString('fr-FR'))}</time></div><div class="rp-post-body" data-rp-post-body="${esc(p.id)}"><p style="white-space:pre-wrap">${safeBody}</p></div><div class="rp-post-tools"><button type="button" class="rp-heart ${liked?'liked':''}" data-rp-heart="${esc(p.id)}" aria-pressed="${liked?'true':'false'}">${liked?'♥':'♡'} J’aime</button><span class="rp-heart-count" data-rp-heart-count="${esc(p.id)}">${heartCount?heartCount+' j’aime':'Soyez le premier à aimer'}</span>${canManage?`<button type="button" data-rp-edit="${esc(p.id)}">Modifier</button><button type="button" data-rp-delete="${esc(p.id)}">Supprimer</button>`:''}</div></div></article>`;
     }).join('')||'<div class="empty">Aucun message pour le moment.</div>';
     $('postsList').querySelectorAll('[data-rp-heart]').forEach(b=>b.addEventListener('click',()=>toggleRpHeart(b.dataset.rpHeart)));
     $('postsList').querySelectorAll('[data-rp-edit]').forEach(b=>b.addEventListener('click',()=>editRpPost(b.dataset.rpEdit)));
@@ -1255,8 +1329,19 @@ html{background:#17131b}body{background:radial-gradient(ellipse at 50% -18%,#3b2
 
   async function toggleRpHeart(postId){
     if(!session){showForumNotice('Connecte-toi pour aimer un message.','error');return;}
-    const {error}=await supabase.rpc('toggle_forum_post_heart',{p_post_id:postId});
-    if(error){showForumNotice('La réaction n’a pas pu être enregistrée. Vérifie que la migration SQL de cette version a été installée.','error');return;}
+    // Bunnyland utilise sa propre table rp_post_likes : ne pas appeler la RPC de Hanamori.
+    const {data:existing,error:lookupError}=await supabase.from('rp_post_likes')
+      .select('post_id,user_id,reaction').eq('post_id',postId).eq('user_id',session.user.id).maybeSingle();
+    if(lookupError){showForumNotice('Impossible de vérifier ta réaction : '+lookupError.message,'error');return;}
+    let result;
+    if(existing && existing.reaction==='heart'){
+      result=await supabase.from('rp_post_likes').delete().eq('post_id',postId).eq('user_id',session.user.id);
+    }else if(existing){
+      result=await supabase.from('rp_post_likes').update({reaction:'heart'}).eq('post_id',postId).eq('user_id',session.user.id);
+    }else{
+      result=await supabase.from('rp_post_likes').insert({post_id:postId,user_id:session.user.id,reaction:'heart'});
+    }
+    if(result.error){showForumNotice('La réaction n’a pas pu être enregistrée : '+result.error.message,'error');return;}
     await loadPosts(activeTopic.id);
   }
   async function editRpPost(postId){
@@ -1268,12 +1353,27 @@ html{background:#17131b}body{background:radial-gradient(ellipse at 50% -18%,#3b2
     if(bodyBox.querySelector('textarea'))return;
     bodyBox.innerHTML=`<textarea class="field rp-edit-area" maxlength="20000" aria-label="Modifier le message RP">${esc(post.content||'')}</textarea><div class="rp-post-tools"><button type="button" data-rp-save-edit="${esc(postId)}">Enregistrer</button><button type="button" data-rp-cancel-edit="${esc(postId)}">Annuler</button></div>`;
     bodyBox.querySelector('[data-rp-cancel-edit]').addEventListener('click',()=>loadPosts(activeTopic.id));
-    bodyBox.querySelector('[data-rp-save-edit]').addEventListener('click',async()=>{const value=bodyBox.querySelector('textarea').value.trim();if(!value){showForumNotice('Le message ne peut pas être vide.','error');return;}const {error:saveError}=await supabase.from('rp_posts').update({content:value,updated_at:new Date().toISOString()}).eq('id',postId).eq('author_id',session.user.id);if(saveError){showForumNotice('Modification impossible : '+saveError.message,'error');return;}showForumNotice('Message RP modifié.','success');await loadPosts(activeTopic.id);});
+    bodyBox.querySelector('[data-rp-save-edit]').addEventListener('click',async()=>{const value=bodyBox.querySelector('textarea').value.trim();if(!value){showForumNotice('Le message ne peut pas être vide.','error');return;}let saveQuery=supabase.from('rp_posts').update({content:value,updated_at:new Date().toISOString()}).eq('id',postId);if(String(post.author_id)!==String(session.user.id))saveQuery=saveQuery.eq('author_id',post.author_id);const {error:saveError}=await saveQuery;if(saveError){showForumNotice('Modification impossible : '+saveError.message,'error');return;}showForumNotice('Message RP modifié.','success');await loadPosts(activeTopic.id);});
   }
+  async function deleteRpTopic(topicId){
+    if(!session)return;
+    const {data:topic,error:lookupError}=await supabase.from('rp_topics').select('id,author_id,title').eq('id',topicId).maybeSingle();
+    if(lookupError||!topic){showForumNotice('Sujet introuvable ou inaccessible.','error');return;}
+    const isModerator=['admin','moderator'].includes(String(myProfile?.role||'').toLowerCase());
+    if(String(topic.author_id)!==String(session.user.id)&&!isModerator){showForumNotice('Tu peux supprimer uniquement les sujets que tu as créés.','error');return;}
+    if(!confirm(`Supprimer le RP « ${topic.title} » et tous ses messages ? Cette action est irréversible.`))return;
+    const {error:postsError}=await supabase.from('rp_posts').delete().eq('topic_id',topicId);
+    if(postsError){showForumNotice('Impossible de supprimer les messages du RP : '+postsError.message,'error');return;}
+    const {error:topicError}=await supabase.from('rp_topics').delete().eq('id',topicId);
+    if(topicError){showForumNotice('Les messages ont été supprimés, mais le sujet n’a pas pu être supprimé : '+topicError.message,'error');return;}
+    showForumNotice('RP supprimé.','success');
+    await loadFamilyTopics(activeFamily,topic.family_id);
+  }
+
   async function deleteRpPost(postId){
     if(!session||!activeTopic)return;
     if(!confirm('Supprimer définitivement ce message RP ? Cette action est irréversible.'))return;
-    const {error}=await supabase.rpc('delete_forum_post',{p_post_id:postId});
+    const {data:post,error:lookupError}=await supabase.from('rp_posts').select('id,author_id').eq('id',postId).maybeSingle();if(lookupError||!post){showForumNotice('Message introuvable ou inaccessible.','error');return;}const isModerator=['admin','moderator'].includes(String(myProfile?.role||'').toLowerCase());if(String(post.author_id)!==String(session.user.id)&&!isModerator){showForumNotice('Tu peux supprimer uniquement tes propres messages.','error');return;}let deleteQuery=supabase.from('rp_posts').delete().eq('id',postId);if(String(post.author_id)===String(session.user.id))deleteQuery=deleteQuery.eq('author_id',session.user.id);const {error}=await deleteQuery;
     if(error){showForumNotice('Suppression impossible : '+error.message,'error');return;}
     showForumNotice('Message RP supprimé.','success');await loadPosts(activeTopic.id);
   }
@@ -1415,5 +1515,127 @@ html{background:#17131b}body{background:radial-gradient(ellipse at 50% -18%,#3b2
   }
   init();
 </script>
+
+<style id="bunnyland-rp-editorial-layout">
+/* Présentation des réponses RP de Bunnyland, adaptée du rendu de référence Hanamori */
+#postsList .bunnyland-rp-editorial{
+ display:grid!important;grid-template-columns:205px minmax(0,1fr)!important;gap:0!important;
+ padding:0!important;overflow:hidden!important;border:1px solid #9b6d8d!important;border-radius:22px!important;
+ background:#fff7fb!important;box-shadow:0 12px 32px #09060d40!important;color:#4d3049!important
+}
+#postsList .bunnyland-rp-editorial .post-character{
+ position:relative!important;display:flex!important;flex-direction:column!important;align-items:center!important;
+ justify-content:flex-start!important;text-align:center!important;padding:28px 16px!important;
+ border-right:1px solid #e8cbdc!important;border-bottom:0!important;
+ background:linear-gradient(180deg,#2b1d2c 0%,#201721 100%)!important;color:#f9eaf2!important;gap:8px!important
+}
+#postsList .bunnyland-rp-editorial .post-character img,
+#postsList .bunnyland-rp-editorial .post-avatar-placeholder{
+ width:128px!important;height:128px!important;min-width:128px!important;border-radius:50%!important;
+ object-fit:cover!important;border:4px solid #e6a5c5!important;
+ box-shadow:0 0 0 7px #e6a5c526,0 8px 24px #10091270!important;margin:8px auto 14px!important
+}
+#postsList .bunnyland-rp-editorial .post-character strong{
+ font-family:'Playfair Display',Georgia,serif!important;font-size:24px!important;color:#f7d7e8!important;margin:0 0 4px!important
+}
+#postsList .bunnyland-rp-editorial .post-character small{font-size:12px!important;color:#cbb3c9!important}
+#postsList .bunnyland-rp-editorial .post-content{
+ max-width:none!important;width:100%!important;min-width:0!important;padding:24px 28px 20px!important;
+ background:linear-gradient(135deg,#fffafd,#fff3f8)!important;color:#563c55!important
+}
+#postsList .bunnyland-rp-editorial .post-author{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;
+ color:#56304e!important;font-family:'Playfair Display',Georgia,serif!important;font-size:24px!important;
+ border-bottom:1px solid #efd6e3!important;padding-bottom:14px!important;margin-bottom:16px!important
+}
+#postsList .bunnyland-rp-editorial .post-author time{font-family:Georgia,serif!important;font-size:11px!important;color:#9e7898!important}
+#postsList .bunnyland-rp-editorial .rp-post-body{font-size:15px!important;line-height:1.95!important;letter-spacing:.05px!important;color:#5d4a60!important;overflow-wrap:anywhere!important}
+#postsList .bunnyland-rp-editorial .rp-post-body p{margin:0!important;white-space:pre-wrap!important}
+#postsList .bunnyland-rp-editorial .rp-dialogue{font-weight:700!important}
+#postsList .bunnyland-rp-editorial .rp-post-tools{
+ display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important;
+ margin-top:22px!important;padding-top:16px!important;border-top:1px solid #ecd2e0!important
+}
+#postsList .bunnyland-rp-editorial .rp-post-tools button{
+ border:1px solid #edc3d8!important;border-radius:999px!important;background:#fff9fc!important;
+ color:#956082!important;padding:9px 14px!important;font-size:12px!important
+}
+#postsList .bunnyland-rp-editorial .rp-post-tools button:hover{background:#f9e2ee!important;border-color:#d98fb5!important}
+@media(max-width:760px){
+ #postsList .bunnyland-rp-editorial{grid-template-columns:1fr!important}
+ #postsList .bunnyland-rp-editorial .post-character{
+  display:grid!important;grid-template-columns:82px minmax(0,1fr)!important;grid-template-rows:auto auto!important;
+  justify-items:start!important;align-items:center!important;gap:2px 14px!important;padding:15px 17px!important;
+  border-right:0!important;border-bottom:1px solid #e8cbdc!important;text-align:left!important
+ }
+ #postsList .bunnyland-rp-editorial .post-character img,#postsList .bunnyland-rp-editorial .post-avatar-placeholder{
+  grid-row:1/span 2!important;width:76px!important;height:76px!important;min-width:76px!important;margin:0!important;border-width:3px!important
+ }
+ #postsList .bunnyland-rp-editorial .post-character strong{font-size:20px!important;align-self:end!important}
+ #postsList .bunnyland-rp-editorial .post-character small{align-self:start!important}
+ #postsList .bunnyland-rp-editorial .post-content{padding:17px 15px!important}
+ #postsList .bunnyland-rp-editorial .post-author{font-size:20px!important}
+ #postsList .bunnyland-rp-editorial .rp-post-body{font-size:14px!important}
+}
+</style>
+
+
+<style id="bunnyland-topic-list-harmonious-fix">
+/* Refonte réelle de la LISTE des sujets RP (et non des réponses elles-mêmes) */
+#topicList .bunnyland-topic-row{
+ display:grid!important;grid-template-columns:minmax(0,1fr) minmax(190px,245px) auto!important;
+ align-items:center!important;gap:18px!important;padding:18px 20px!important;margin:0!important;
+ border:1px solid #68465f!important;border-radius:19px!important;
+ background:linear-gradient(110deg,#211823 0%,#251a28 58%,#201721 100%)!important;
+ box-shadow:0 7px 20px #09060d35!important;color:#f4eaf1!important;
+ transition:border-color .18s ease,transform .18s ease,box-shadow .18s ease!important;
+}
+#topicList .bunnyland-topic-row:hover{transform:translateY(-1px)!important;border-color:#b47b9f!important;box-shadow:0 10px 25px #09060d55!important}
+#topicList .bunnyland-topic-row .topic-main{min-width:0!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:7px!important}
+#topicList .bunnyland-topic-row h4{font-family:'Playfair Display',Georgia,serif!important;font-size:clamp(18px,1.7vw,23px)!important;line-height:1.25!important;color:#f8eaf2!important;margin:0!important}
+#topicList .bunnyland-topic-row .topic-main>p:not(.topic-last-preview){font-size:12px!important;color:#c8b4c6!important;line-height:1.5!important}
+#topicList .bunnyland-topic-row .topic-meta{font-size:11px!important;color:#bda8bd!important;margin:0!important;line-height:1.4!important}
+#topicList .bunnyland-topic-row .topic-participants{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:6px!important;margin-top:2px!important}
+#topicList .bunnyland-topic-row .topic-participant{display:inline-flex!important;align-items:center!important;gap:6px!important;padding:4px 9px 4px 5px!important;border:1px solid #604258!important;border-radius:999px!important;background:#382536!important;color:#f2dce9!important;font-size:11px!important;white-space:nowrap!important}
+#topicList .bunnyland-topic-row .topic-participant img,#topicList .bunnyland-topic-row .topic-participant-placeholder{width:29px!important;height:29px!important;min-width:29px!important;border-radius:50%!important;object-fit:cover!important;border:2px solid #d69aba!important}
+#topicList .bunnyland-topic-row .topic-participant-placeholder{display:inline-flex!important;align-items:center!important;justify-content:center!important;background:#493047!important;color:#f9e8f2!important}
+#topicList .bunnyland-topic-row .topic-reply-count{display:inline-flex!important;align-items:center!important;align-self:flex-start!important;padding:5px 10px!important;border-radius:999px!important;background:#3a2638!important;color:#e9bad5!important;font-size:11px!important;line-height:1.4!important}
+#topicList .bunnyland-topic-row .topic-last-preview{font-size:12px!important;line-height:1.55!important;color:#d4c4d3!important;margin:0!important;max-width:100%!important;overflow-wrap:anywhere!important}
+#topicList .bunnyland-topic-row .topic-last{min-width:0!important;min-height:76px!important;display:grid!important;grid-template-columns:58px minmax(0,1fr)!important;align-items:center!important;gap:11px!important;padding-left:18px!important;border-left:1px solid #62445c!important}
+#topicList .bunnyland-topic-row .topic-last-avatar{width:58px!important;height:58px!important;min-width:58px!important;object-fit:cover!important;border-radius:50%!important;border:2px solid #d994bc!important;box-shadow:0 0 0 4px #4a3047!important}
+#topicList .bunnyland-topic-row .topic-last-placeholder{display:flex!important;align-items:center!important;justify-content:center!important;background:#493047!important;color:#f7ddeb!important}
+#topicList .bunnyland-topic-row .topic-last strong{display:block!important;font-size:13px!important;color:#f0b8d5!important;line-height:1.4!important}
+#topicList .bunnyland-topic-row .topic-last small,#topicList .bunnyland-topic-row .topic-last time{display:block!important;font-size:11px!important;line-height:1.5!important;color:#cbb7ca!important}
+#topicList .bunnyland-topic-row .topic-delete{cursor:pointer!important;align-self:center!important;white-space:nowrap!important;padding:10px 13px!important;border:1px solid #986184!important;border-radius:999px!important;background:#352334!important;color:#f0c6dc!important;font-size:12px!important;transition:background .18s ease,border-color .18s ease!important}
+#topicList .bunnyland-topic-row .topic-delete:hover{background:#59364f!important;border-color:#d994bc!important}
+@media(max-width:900px){#topicList .bunnyland-topic-row{grid-template-columns:minmax(0,1fr) auto!important;gap:12px!important;padding:15px!important}#topicList .bunnyland-topic-row .topic-last{grid-column:1/-1!important;border-left:0!important;border-top:1px solid #62445c!important;padding:12px 0 0!important;min-height:0!important}#topicList .bunnyland-topic-row .topic-delete{grid-column:2;grid-row:1;white-space:normal!important;max-width:120px!important}}
+@media(max-width:520px){#topicList .bunnyland-topic-row{grid-template-columns:minmax(0,1fr)!important}#topicList .bunnyland-topic-row .topic-delete{grid-column:1;grid-row:auto;justify-self:start!important}#topicList .bunnyland-topic-row .topic-last{grid-column:1!important}#topicList .bunnyland-topic-row h4{font-size:18px!important}}
+</style>
+
+
+
+<style id="bunnyland-rp-harmonisation-finale">
+/* Harmonisation des réponses RP avec la référence Hanamori : texte contrasté, hiérarchie plus nette. */
+#postsList .bunnyland-rp-editorial{grid-template-columns:190px minmax(0,1fr)!important;border-radius:24px!important;border-color:#a97898!important;background:#fff8fc!important;margin:0 0 24px!important;box-shadow:0 10px 28px rgba(8,4,12,.24)!important}
+#postsList .bunnyland-rp-editorial .post-character{padding:24px 16px!important;gap:7px!important}
+#postsList .bunnyland-rp-editorial .post-character img,#postsList .bunnyland-rp-editorial .post-avatar-placeholder{width:116px!important;height:116px!important;min-width:116px!important;margin:8px auto 12px!important}
+#postsList .bunnyland-rp-editorial .post-character strong{font-size:23px!important;color:#f8e8f1!important}
+#postsList .bunnyland-rp-editorial .post-character small{font-size:12px!important;color:#d7bed2!important}
+#postsList .bunnyland-rp-editorial .post-content{padding:22px 26px 20px!important;background:#fff8fc!important;color:#39283b!important}
+#postsList .bunnyland-rp-editorial .post-kicker{display:flex!important;justify-content:space-between!important;align-items:center!important;margin:0 0 13px!important;color:#b56b95!important;font:700 10px/1.4 'DM Sans',Arial,sans-serif!important;letter-spacing:2px!important}
+#postsList .bunnyland-rp-editorial .post-number{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:34px!important;height:30px!important;border:1px solid #efbfd7!important;border-radius:12px!important;letter-spacing:0!important;font-size:11px!important;color:#9a5b80!important;background:#fffafd!important}
+#postsList .bunnyland-rp-editorial .post-author{font-size:22px!important;color:#55324e!important;border-bottom:1px solid #efd2e2!important;padding-bottom:13px!important;margin-bottom:16px!important}
+#postsList .bunnyland-rp-editorial .post-author span{font-family:'Playfair Display',Georgia,serif!important;font-weight:700!important;color:#59324f!important}
+#postsList .bunnyland-rp-editorial .post-author time{font-size:11px!important;color:#946d8d!important}
+#postsList .bunnyland-rp-editorial .rp-post-body{font-size:16px!important;line-height:1.85!important;color:#49384d!important}
+#postsList .bunnyland-rp-editorial .rp-post-body p{color:#49384d!important}
+#postsList .bunnyland-rp-editorial .rp-dialogue{color:#bd7199!important}
+#postsList .bunnyland-rp-editorial .rp-post-tools{margin-top:20px!important;padding-top:15px!important;border-top:1px solid #efd2e2!important;gap:9px!important}
+#postsList .bunnyland-rp-editorial .rp-post-tools button{background:#fffafd!important;color:#8e5a7c!important;border-color:#edbfd6!important;padding:9px 15px!important;font-size:12px!important}
+#postsList .bunnyland-rp-editorial .rp-post-tools button:hover{background:#f9e5ef!important;color:#603d58!important}
+#postsList .bunnyland-rp-editorial .rp-heart-count{font-size:11px!important;color:#9a8299!important}
+@media(max-width:760px){#postsList .bunnyland-rp-editorial{grid-template-columns:1fr!important}#postsList .bunnyland-rp-editorial .post-character img,#postsList .bunnyland-rp-editorial .post-avatar-placeholder{width:76px!important;height:76px!important;min-width:76px!important}#postsList .bunnyland-rp-editorial .post-content{padding:17px!important}#postsList .bunnyland-rp-editorial .rp-post-body{font-size:14px!important;line-height:1.75!important}}
+</style>
+
 </body>
 </html>
