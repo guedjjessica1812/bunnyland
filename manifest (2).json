@@ -1,0 +1,27 @@
+{
+  "id": "/bunnyland/",
+  "name": "Bunnyland — univers kawaii",
+  "short_name": "Bunnyland",
+  "description": "Ton petit univers RP doux et magique.",
+  "lang": "fr-FR",
+  "start_url": "/bunnyland/",
+  "scope": "/bunnyland/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#17131b",
+  "theme_color": "#17131b",
+  "icons": [
+    {
+      "src": "/bunnyland/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/bunnyland/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
