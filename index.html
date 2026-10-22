@@ -4278,7 +4278,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   const SUPABASE_URL = 'https://zoyltvnyxdymakzhdsyx.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ZEZv8WlQYhycfcxfOfz1jw_cBGPyO4q';
   const configured = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('REMPLACER') && SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publishable_') && !SUPABASE_PUBLISHABLE_KEY.includes('REMPLACER');
-  const supabase = configured ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
+  const supabase = configured ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: window.localStorage } }) : null;
 
   const $ = id => document.getElementById(id);
   let session = null, myProfile = null, allCharacters = [], forumCategories = [], activeCategory = null, activeTopic = null, activeFamily = null;
@@ -4293,7 +4293,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const showMessage = (id, msg, type='') => { const el=$(id); el.textContent=msg; el.className='notice'+(type?' '+type:''); };
   const hideMessage = id => { $(id).classList.add('hidden'); };
-  const open = id => $(id).classList.add('show');
+  const open = id => { if(id==='authOverlay' && typeof setAuthMode==='function') setAuthMode('login'); $(id).classList.add('show'); };
   const close = id => $(id).classList.remove('show');
   document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>close(b.dataset.close)));
   document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)close(o.id)}));
@@ -4337,7 +4337,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   $('bunnyAdminOverlay')?.addEventListener('click',e=>{if(e.target.id==='bunnyAdminOverlay')closeBunnyAdmin();});
   $('bunnyAdminAdd')?.addEventListener('click',addBunnyFamily);
   $('newTopicBtnSecondary').addEventListener('click',async()=>{if(!session){noticeTop('Connecte-toi pour créer un sujet.');open('authOverlay');return;}if(!allCharacters.length)await loadCharacters();populateTopicCategories();await populateTopicCharacterPicker();hideMessage('topicCreateMessage');open('topicCreateOverlay')});
-  $('loginBtn').addEventListener('click',()=>{hideMessage('authMessage');open('authOverlay')});
+  $('loginBtn').addEventListener('click',()=>{hideMessage('authMessage');setAuthMode('login');open('authOverlay')});
   $('logoutBtn').addEventListener('click',async()=>{await supabase?.auth.signOut();});
   $('newBtn').addEventListener('click',()=>editCharacter());
   $('search').addEventListener('input',renderCards);
