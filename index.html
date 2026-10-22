@@ -4062,6 +4062,19 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     <div class="brand"><div class="seal">花</div><div><h1>Bunnyland</h1><small>Une île, mille histoires</small></div></div>
     <nav><button class="btn" id="homeBtn">Accueil & forum</button><button class="btn" id="forumBtn">Les lieux ↓</button><button class="btn" id="charactersBtn">Personnages</button><button class="btn" id="instagramBtn">Instagram</button><button class="btn" id="smsBtn">SMS privés</button><button class="btn" id="bunnyNotificationsBtn" type="button" aria-expanded="false" aria-controls="bunnyNotificationsPanel">♧ Notifications <span id="bunnyNotificationsBadge" aria-label="notifications non lues">0</span></button><button class="btn" id="loginBtn">Connexion</button><button class="btn primary hidden" id="newBtn">＋ Ajouter un personnage</button><button class="btn hidden" id="logoutBtn">Déconnexion</button></nav>
   </header>
+  <section id="bunnyNotificationsPanel" role="dialog" aria-label="Notifications Bunnyland" aria-hidden="true">
+    <div class="bunny-notif-head">
+      <h3>🔔 Notifications</h3>
+      <div class="bunny-notif-tools">
+        <button type="button" id="bunnyNotificationsReadAll">Tout lire</button>
+        <button type="button" id="bunnyNotificationsClose" aria-label="Fermer">✕</button>
+      </div>
+    </div>
+    <div id="bunnyNotificationsList" aria-live="polite">
+      <div class="bunny-notif-empty">Chargement des notifications…</div>
+    </div>
+    <button type="button" id="bunnyEnablePush" class="bunny-notif-push">Activer les notifications push sur cet appareil</button>
+  </section>
   <div id="topMessage" class="notice top-message"></div>
   <section class="hero">
     <div><div class="eyebrow">À LA UNE · BIENVENUE À BUNNYLAND</div><h2>Une île,<br><em>mille histoires.</em></h2><p>Découvre les habitants de Bunnyland, leurs histoires, leurs secrets et les liens qui feront évoluer le jeu.</p></div>
