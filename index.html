@@ -4030,6 +4030,29 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
 </style>
 
 
+
+<style id="bunnyland-notifications-style">
+#bunnyNotificationsBtn{position:relative;display:inline-flex;align-items:center;gap:7px}
+#bunnyNotificationsBadge{display:none;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:#ff4fa3;color:#190f1b;font-size:10px;font-weight:800;align-items:center;justify-content:center;letter-spacing:0}
+#bunnyNotificationsBadge.show{display:inline-flex}
+#bunnyNotificationsPanel{position:fixed;z-index:100020;top:76px;right:22px;width:min(410px,calc(100vw - 24px));max-height:min(76vh,650px);overflow:hidden;background:#17131f;border:1px solid #62465e;box-shadow:0 18px 65px #0008;color:#f4edf2;display:none;border-radius:12px}
+#bunnyNotificationsPanel.show{display:flex;flex-direction:column}
+.bunny-notif-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px;border-bottom:1px solid #393141}
+.bunny-notif-head h3{font:600 21px Georgia,serif;margin:0;color:#f4edf2}
+.bunny-notif-tools{display:flex;gap:7px;align-items:center}
+.bunny-notif-tools button,.bunny-notif-row{cursor:pointer}
+.bunny-notif-tools button{border:1px solid #493448;background:#241a29;color:#e9c4d6;border-radius:7px;padding:7px 9px;font-size:11px}
+#bunnyNotificationsList{overflow:auto;padding:8px;overscroll-behavior:contain}
+.bunny-notif-row{width:100%;display:flex;gap:10px;text-align:left;padding:12px;border:0;border-bottom:1px solid #332736;background:transparent;color:#f4edf2}
+.bunny-notif-row:hover{background:#241b29}.bunny-notif-row.unread{background:#2a1d2d}
+.bunny-notif-dot{flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:#ff68b0;margin-top:6px}
+.bunny-notif-row.read .bunny-notif-dot{background:#625463}
+.bunny-notif-copy{min-width:0;flex:1}.bunny-notif-copy strong{display:block;font-size:13px;line-height:1.45;font-weight:700}.bunny-notif-copy small{display:block;color:#a99bad;font-size:11px;margin-top:5px}
+.bunny-notif-empty{padding:26px 16px;text-align:center;color:#b7a8b4;font-size:13px;line-height:1.6}
+.bunny-notif-push{display:block;width:calc(100% - 16px);margin:0 8px 8px;padding:11px;border:1px solid #62465e;background:#2a1d2d;color:#ffd6e8;border-radius:8px;font-weight:700;cursor:pointer}
+@media(max-width:600px){#bunnyNotificationsPanel{top:8px;right:8px;width:calc(100vw - 16px);max-height:84vh}.shell>header nav #bunnyNotificationsBtn{flex:1 1 100%;justify-content:center;min-height:42px}}
+</style>
+
 </head>
 
 <body>
@@ -4037,7 +4060,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
 <div class="shell">
   <header>
     <div class="brand"><div class="seal">花</div><div><h1>Bunnyland</h1><small>Une île, mille histoires</small></div></div>
-    <nav><button class="btn" id="homeBtn">Accueil & forum</button><button class="btn" id="forumBtn">Les lieux ↓</button><button class="btn" id="charactersBtn">Personnages</button><button class="btn" id="instagramBtn">Instagram</button><button class="btn" id="smsBtn">SMS privés</button><button class="btn" id="loginBtn">Connexion</button><button class="btn primary hidden" id="newBtn">＋ Ajouter un personnage</button><button class="btn hidden" id="logoutBtn">Déconnexion</button></nav>
+    <nav><button class="btn" id="homeBtn">Accueil & forum</button><button class="btn" id="forumBtn">Les lieux ↓</button><button class="btn" id="charactersBtn">Personnages</button><button class="btn" id="instagramBtn">Instagram</button><button class="btn" id="smsBtn">SMS privés</button><button class="btn" id="bunnyNotificationsBtn" type="button" aria-expanded="false" aria-controls="bunnyNotificationsPanel">♧ Notifications <span id="bunnyNotificationsBadge" aria-label="notifications non lues">0</span></button><button class="btn" id="loginBtn">Connexion</button><button class="btn primary hidden" id="newBtn">＋ Ajouter un personnage</button><button class="btn hidden" id="logoutBtn">Déconnexion</button></nav>
   </header>
   <div id="topMessage" class="notice top-message"></div>
   <section class="hero">
@@ -5204,11 +5227,67 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     $('smsBody').value='';smsResetPhoto();smsNotice('Réponse publiée 🌸','success');await loadSms();if(activeOpenSmsTopic)renderOpenSmsTopic(activeOpenSmsTopic);
   }
 
+
+  // Centre de notifications Bunnyland : lecture des notifications destinées au compte connecté.
+  let bunnyNotificationRows = [];
+  let bunnyNotificationChannel = null;
+  const BUNNYLAND_VAPID_PUBLIC_KEY = 'BHijHtzAKc3HEbUR9EJ7LDMnVGp-4k2-qsGulf2bQDzNgD-s4qzslu1bn41YErIqXRSV88NZl_Y1TrQH_durPrQ';
+  function bunnyNotifRelative(value){if(!value)return '';const mins=Math.max(0,Math.floor((Date.now()-new Date(value).getTime())/60000));if(mins<1)return 'À l’instant';if(mins<60)return `Il y a ${mins} min`;const h=Math.floor(mins/60);if(h<24)return `Il y a ${h} h`;return `Il y a ${Math.floor(h/24)} j`;}
+  function bunnyNotifLabel(n){const who=n.actor_character_name||'Un personnage';const what=({comment:'a commenté une publication',reply:'a répondu à un commentaire',like:'a aimé une publication',message:'t’a envoyé un message',rp_reply:'a répondu à ton sujet RP'})[n.kind]||n.message||'Nouvelle activité';return `${who} ${what}`;}
+  function renderBunnyNotifications(){
+    const host=$('bunnyNotificationsList'),badge=$('bunnyNotificationsBadge');if(!host||!badge)return;
+    const unread=bunnyNotificationRows.filter(n=>!n.is_read).length;badge.textContent=unread>99?'99+':String(unread);badge.classList.toggle('show',unread>0);
+    if(!session){host.innerHTML='<div class="bunny-notif-empty">Connecte-toi pour retrouver tes notifications. ♡</div>';return;}
+    if(!bunnyNotificationRows.length){host.innerHTML='<div class="bunny-notif-empty">Tu es à jour !<br>Les commentaires, likes, messages et réponses RP apparaîtront ici. ✧</div>';return;}
+    host.innerHTML=bunnyNotificationRows.map(n=>`<button type="button" class="bunny-notif-row ${n.is_read?'read':'unread'}" data-bunny-notif-id="${esc(n.id)}"><span class="bunny-notif-dot"></span><span class="bunny-notif-copy"><strong>${esc(bunnyNotifLabel(n))}</strong><small>${esc(bunnyNotifRelative(n.created_at))}</small></span></button>`).join('');
+    host.querySelectorAll('[data-bunny-notif-id]').forEach(b=>b.addEventListener('click',()=>openBunnyNotification(b.dataset.bunnyNotifId)));
+  }
+  async function loadBunnyNotifications(){
+    if(!configured||!session){bunnyNotificationRows=[];renderBunnyNotifications();return;}
+    const {data,error}=await supabase.from('bunnyland_notifications').select('id,recipient_id,actor_id,actor_character_id,kind,post_id,comment_id,conversation_id,rp_topic_id,message,is_read,created_at').eq('recipient_id',session.user.id).order('created_at',{ascending:false}).limit(40);
+    if(error){console.error('Bunnyland notifications:',error);$('bunnyNotificationsList').innerHTML='<div class="bunny-notif-empty">Impossible de charger les notifications. Vérifie les autorisations Supabase.</div>';return;}
+    const rows=data||[];const ids=[...new Set(rows.map(n=>n.actor_character_id).filter(Boolean))];let names=new Map();
+    if(ids.length){const {data:chars}=await supabase.from('characters').select('id,name').in('id',ids);(chars||[]).forEach(c=>names.set(String(c.id),c.name));}
+    bunnyNotificationRows=rows.map(n=>({...n,actor_character_name:n.actor_character_id?names.get(String(n.actor_character_id))||'Un personnage':'Un membre'}));renderBunnyNotifications();
+  }
+  async function openBunnyNotification(id){
+    const n=bunnyNotificationRows.find(x=>String(x.id)===String(id));if(!n)return;
+    if(!n.is_read){const {error}=await supabase.from('bunnyland_notifications').update({is_read:true}).eq('id',n.id).eq('recipient_id',session.user.id);if(!error)n.is_read=true;renderBunnyNotifications();}
+    $('bunnyNotificationsPanel').classList.remove('show');$('bunnyNotificationsPanel').setAttribute('aria-hidden','true');$('bunnyNotificationsBtn').setAttribute('aria-expanded','false');
+    if(n.kind==='message'&&n.conversation_id){showPage('sms');await loadSms();}
+    else if(['like','comment','reply'].includes(n.kind)){showPage('instagram');await loadInstagram();}
+    else if(n.kind==='rp_reply'&&n.rp_topic_id){showPage('forum');await loadCategories();await loadPosts(n.rp_topic_id);}
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  async function markAllBunnyNotificationsRead(){
+    if(!session)return;const {error}=await supabase.from('bunnyland_notifications').update({is_read:true}).eq('recipient_id',session.user.id).eq('is_read',false);
+    if(error){noticeTop('Impossible de marquer les notifications comme lues.','error');return;}await loadBunnyNotifications();
+  }
+  function bunnyUrlBase64ToUint8Array(base64String){const padding='='.repeat((4-base64String.length%4)%4);const raw=atob((base64String+padding).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));}
+  async function enableBunnyPush(){
+    if(!session){noticeTop('Connecte-toi pour activer les notifications.','error');open('authOverlay');return;}
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){noticeTop('Les notifications push ne sont pas prises en charge par ce navigateur. Essaie Chrome ou Safari sur un site sécurisé (HTTPS).','error');return;}
+    try{
+      const permission=await Notification.requestPermission();if(permission!=='granted'){noticeTop('Autorise les notifications dans les réglages de ton navigateur.','error');return;}
+      const registration=await navigator.serviceWorker.register('./service-worker.js');await navigator.serviceWorker.ready;
+      let subscription=await registration.pushManager.getSubscription();if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bunnyUrlBase64ToUint8Array(BUNNYLAND_VAPID_PUBLIC_KEY)});
+      const json=subscription.toJSON();const {error}=await supabase.from('bunnyland_push_subscriptions').upsert({user_id:session.user.id,endpoint:json.endpoint,subscription:json,updated_at:new Date().toISOString()},{onConflict:'endpoint'});
+      if(error){console.error('Enregistrement push:',error);noticeTop('Le navigateur est prêt, mais il reste à installer la table push dans Supabase. Je te fournirai le fichier de configuration.','error');return;}
+      noticeTop('Notifications push activées sur cet appareil ! 🌸','success');$('bunnyEnablePush').textContent='✓ Notifications push activées sur cet appareil';
+    }catch(err){console.error('Activation push Bunnyland:',err);noticeTop('Activation impossible : '+(err?.message||'vérifie les autorisations du navigateur.'),'error');}
+  }
+  $('bunnyNotificationsBtn')?.addEventListener('click',async()=>{const panel=$('bunnyNotificationsPanel'),show=!panel.classList.contains('show');panel.classList.toggle('show',show);panel.setAttribute('aria-hidden',String(!show));$('bunnyNotificationsBtn').setAttribute('aria-expanded',String(show));if(show){if(!session){open('authOverlay');}else await loadBunnyNotifications();}});
+  $('bunnyNotificationsClose')?.addEventListener('click',()=>{$('bunnyNotificationsPanel').classList.remove('show');$('bunnyNotificationsPanel').setAttribute('aria-hidden','true');$('bunnyNotificationsBtn').setAttribute('aria-expanded','false');});
+  $('bunnyNotificationsReadAll')?.addEventListener('click',markAllBunnyNotificationsRead);
+  $('bunnyEnablePush')?.addEventListener('click',enableBunnyPush);
+  document.addEventListener('click',e=>{const panel=$('bunnyNotificationsPanel');if(panel?.classList.contains('show')&&!panel.contains(e.target)&&!$('bunnyNotificationsBtn').contains(e.target)){panel.classList.remove('show');panel.setAttribute('aria-hidden','true');$('bunnyNotificationsBtn').setAttribute('aria-expanded','false');}});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session)loadBunnyNotifications();});
+
   async function init(){
     if(!configured){updateNav();await loadCharacters();await loadHomeTopCharacters();await loadHomeActivity();await loadHomeMembers();await loadHomeSmsPreview();await loadHomeRecentConnections();return;}
     const {data}=await supabase.auth.getSession();session=data.session;
-    supabase.auth.onAuthStateChange((_event,newSession)=>{session=newSession;setTimeout(async()=>{await refreshProfile();updateNav();await touchLastSeen();await loadCharacters();await loadHomeTopCharacters();await loadHomeSmsPreview();await loadHomeRecentConnections()},0)});
-    await refreshProfile();updateNav();await touchLastSeen();await loadCharacters();await loadHomeTopCharacters();await loadHomeActivity();await loadHomeMembers();await loadHomeSmsPreview();await loadHomeRecentConnections();await loadCategories();setInterval(async()=>{await touchLastSeen();},5*60*1000);
+    supabase.auth.onAuthStateChange((_event,newSession)=>{session=newSession;setTimeout(async()=>{await refreshProfile();updateNav();await touchLastSeen();await loadCharacters();await loadHomeTopCharacters();await loadHomeSmsPreview();await loadHomeRecentConnections();await loadBunnyNotifications()},0)});
+    await refreshProfile();updateNav();await touchLastSeen();await loadCharacters();await loadHomeTopCharacters();await loadHomeActivity();await loadHomeMembers();await loadHomeSmsPreview();await loadHomeRecentConnections();await loadCategories();await loadBunnyNotifications();setInterval(async()=>{await touchLastSeen();await loadBunnyNotifications();},30*1000);
   }
   init();
 </script>
