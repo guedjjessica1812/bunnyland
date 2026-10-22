@@ -914,6 +914,30 @@ body:not(.day-mode) .family-showcase .category-card h4,body:not(.day-mode) .fami
 @media(max-width:390px){.family-showcase .category-list,.family-rp-section .category-list{grid-template-columns:1fr!important}}
 </style>
 
+
+<style id="bunnyland-v4-compact-families-rp">
+/* Bunnyland V4 : familles et catégories RP plus discrètes, sans répétition des listes pendant la lecture d'un RP. */
+.family-showcase,.family-rp-section{padding:clamp(12px,1.5vw,20px)!important;margin:0 0 16px!important;border-radius:15px!important}
+.family-showcase h2,.family-rp-section h2{font-size:clamp(22px,2.2vw,31px)!important;line-height:1.12!important;margin:5px 0 8px!important}
+.family-showcase-intro,.family-rp-section .forum-section-heading p{font-size:12px!important;line-height:1.5!important;margin:0 0 12px!important}
+.family-showcase .category-list,.family-rp-section .category-list{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+.family-showcase .family-symbol-card,.family-rp-section .category-card{min-height:64px!important;padding:9px 11px!important;gap:9px!important;border-radius:10px!important;box-shadow:none!important}
+.family-showcase .family-symbol{width:34px!important;height:34px!important;flex:0 0 34px!important;font-size:18px!important}
+.family-showcase .family-symbol-copy h4,.family-rp-section .category-card h4{font-size:14px!important;line-height:1.2!important;margin:0 0 2px!important}
+.family-showcase .family-symbol-copy p,.family-rp-section .category-card p{font-size:9px!important;line-height:1.3!important;margin:0!important}
+.family-showcase .family-symbol-arrow{font-size:16px!important;margin-left:auto!important}
+.family-rp-section .category-count{font-size:9px!important;white-space:nowrap!important}
+.family-rp-section .forum-section-heading{gap:12px!important;margin-bottom:12px!important}
+.family-rp-section .forum-section-heading .btn{padding:9px 12px!important;font-size:10px!important;white-space:nowrap!important}
+#topicArea .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#topicArea .toolbar h3{font-size:clamp(18px,2vw,25px)!important}
+#topicArea .topic-list{gap:10px!important}
+@media(max-width:950px){.family-showcase .category-list,.family-rp-section .category-list{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:650px){.family-showcase,.family-rp-section{padding:12px!important}.family-showcase .category-list,.family-rp-section .category-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}.family-showcase .family-symbol-card,.family-rp-section .category-card{min-height:58px!important;padding:8px!important;gap:7px!important}.family-showcase .family-symbol{width:30px!important;height:30px!important;flex-basis:30px!important;font-size:16px!important}.family-showcase .family-symbol-copy h4,.family-rp-section .category-card h4{font-size:12px!important}.family-showcase .family-symbol-copy p,.family-rp-section .category-card p{font-size:8px!important}.family-showcase .family-symbol-arrow{font-size:14px!important}.family-rp-section .forum-section-heading{align-items:flex-start!important;flex-direction:column!important}.family-rp-section .forum-section-heading .btn{width:auto!important;max-width:100%!important}}
+@media(max-width:360px){.family-showcase .category-list,.family-rp-section .category-list{grid-template-columns:1fr!important}}
+@media(prefers-reduced-motion:no-preference){.family-showcase .family-symbol{transition:transform .25s ease,box-shadow .25s ease}.family-showcase .family-symbol-card:hover .family-symbol{transform:rotate(-7deg) scale(1.06);box-shadow:0 0 14px #bd789f33}}
+</style>
+
 </head>
 <body>
 <div class="shell">
@@ -990,7 +1014,7 @@ body:not(.day-mode) .family-showcase .category-card h4,body:not(.day-mode) .fami
       <div id="familyCharactersGrid" class="cards"></div>
     </section>
     <section class="family-rp-section" aria-labelledby="familyRpTitle">
-      <div class="forum-section-heading"><div><div class="eyebrow">LES HISTOIRES À ÉCRIRE</div><h2 id="familyRpTitle">Les catégories RP</h2><p>Ouvre l’espace d’une famille pour lire les sujets ou lancer un nouveau RP.</p></div><button class="btn primary" id="newTopicBtnSecondary" type="button">＋ Nouveau sujet RP</button></div>
+      <div class="forum-section-heading"><div><div class="eyebrow">LES HISTOIRES À ÉCRIRE</div><h2 id="familyRpTitle">Les catégories RP</h2><p>Ouvre l’espace d’une famille pour lire les sujets ou lancer un nouveau RP.</p></div><div class="family-rp-actions"><button class="btn" id="manageFamiliesBtn" type="button" hidden>Gérer les familles</button><button class="btn primary" id="newTopicBtnSecondary" type="button">＋ Nouveau sujet RP</button></div></div>
       <div id="familyRpCategoryList" class="category-list"><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Famille" data-kind="rp"><div><h4>Famille Famille</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Famille" data-kind="rp"><div><h4>Famille Famille</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Zhu" data-kind="rp"><div><h4>Famille Zhu</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Famille" data-kind="rp"><div><h4>Famille Famille</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Jo" data-kind="rp"><div><h4>Famille Jo</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Kwon" data-kind="rp"><div><h4>Famille Kwon</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Ellis" data-kind="rp"><div><h4>Famille Ellis</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Famille" data-kind="rp"><div><h4>Famille</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article></div>
       <div id="topicArea" class="hidden"><div class="toolbar"><h3 id="topicHeading">Les sujets</h3><button class="btn" id="backCategories">← Catégories RP</button></div><div id="topicList" class="topic-list"></div></div>
     </section>
@@ -1152,9 +1176,10 @@ body:not(.day-mode) .family-showcase .category-card h4,body:not(.day-mode) .fami
   $('homeSmsOpenBtn').addEventListener('click',()=>{showPage('sms');window.scrollTo({top:0,behavior:'smooth'});});
   if($('homeActivityRefresh')) $('homeActivityRefresh').addEventListener('click',loadHomeActivity);
   document.querySelectorAll('[data-home-go]').forEach(b=>b.addEventListener('click',()=>{const page=b.dataset.homeGo;showPage(page);if(page==='forum')loadCategories();window.scrollTo({top:0,behavior:'smooth'})}));
-  $('backCategories').addEventListener('click',()=>{activeCategory=null;activeFamily=null;$('topicArea').classList.add('hidden');$('familyRpCategoryList').scrollIntoView({behavior:'smooth',block:'start'})});
+  $('backCategories').addEventListener('click',()=>{activeCategory=null;activeFamily=null;$('topicArea').classList.add('hidden');$('categoryList').classList.remove('hidden');$('familyRpCategoryList').classList.remove('hidden');$('familyRpCategoryList').scrollIntoView({behavior:'smooth',block:'start'})});
   $('backTopics').addEventListener('click',()=>{activeTopic=null;$('postArea').classList.add('hidden');$('topicArea').classList.remove('hidden')});
   $('newTopicBtn').addEventListener('click',async()=>{if(!session){noticeTop('Connecte-toi pour créer un sujet.');open('authOverlay');return;}if(!allCharacters.length)await loadCharacters();populateTopicCategories();await populateTopicCharacterPicker();hideMessage('topicCreateMessage');open('topicCreateOverlay')});
+  $('manageFamiliesBtn')?.addEventListener('click',manageFamiliesAndCategories);
   $('newTopicBtnSecondary').addEventListener('click',async()=>{if(!session){noticeTop('Connecte-toi pour créer un sujet.');open('authOverlay');return;}if(!allCharacters.length)await loadCharacters();populateTopicCategories();await populateTopicCharacterPicker();hideMessage('topicCreateMessage');open('topicCreateOverlay')});
   $('loginBtn').addEventListener('click',()=>{hideMessage('authMessage');open('authOverlay')});
   $('logoutBtn').addEventListener('click',async()=>{await supabase?.auth.signOut();});
@@ -1574,7 +1599,7 @@ body:not(.day-mode) .family-showcase .category-card h4,body:not(.day-mode) .fami
     // Bunnyland utilise la table families ; ne pas dépendre de forum_categories.
     const {data:familyRows,error}=await supabase.from('families').select('id,name,description,created_at').order('name');
     if(error){showForumNotice('Impossible de charger les familles de Bunnyland : '+error.message,'error');return;}
-    bunnylandFamilyRows=familyRows||[];
+    bunnylandFamilyRows=familyRows||[]; const manageBtn=$('manageFamiliesBtn'); if(manageBtn) manageBtn.hidden=!isAdmin();
     populateCharacterFamilySelect($('cFamilyGroup')?.value||'');
     // Les doublons de noms restent dans la base : on les regroupe uniquement pour l’affichage.
     const seen=new Set();
@@ -1613,14 +1638,52 @@ body:not(.day-mode) .family-showcase .category-card h4,body:not(.day-mode) .fami
     grid.querySelectorAll('[data-detail]').forEach(btn=>btn.addEventListener('click',()=>showDetail(btn.dataset.detail)));
   }
 
-  function populateTopicCategories(){ const rows=bunnylandFamilyRows||[];$('topicCategory').innerHTML=rows.map(f=>`<option value="${esc(f.id)}">${['University Dream','After Hour'].includes(f.name)?esc(f.name):'Famille '+esc(f.name)}</option>`).join(''); const selected=rows.find(f=>f.name===activeFamily);if(selected)$('topicCategory').value=selected.id; }
+
+  async function manageFamiliesAndCategories(){
+    if(!isAdmin()){noticeTop('La gestion des familles est réservée aux administrateurs.');return;}
+    if(!configured){noticeTop('Connexion à Bunnyland indisponible.');return;}
+    const rows=(bunnylandFamilyRows||[]).filter(f=>String(f.name||'').trim());
+    const unique=[];const seen=new Set();
+    for(const f of rows){const key=String(f.name).trim().toLocaleLowerCase('fr');if(!seen.has(key)){seen.add(key);unique.push(f);}}
+    const action=window.prompt('GÉRER LES FAMILLES / CATÉGORIES RP\\n\\n1 = Ajouter\\n2 = Renommer\\n3 = Supprimer une famille inutilisée\\n\\nEntre 1, 2 ou 3 :');
+    if(action===null)return;
+    if(action.trim()==='1'){
+      const name=window.prompt('Nom de la nouvelle famille ou catégorie RP :');
+      if(!name||!name.trim())return;
+      if(unique.some(f=>f.name.trim().toLocaleLowerCase('fr')===name.trim().toLocaleLowerCase('fr'))){window.alert('Ce nom existe déjà.');return;}
+      const {error}=await supabase.from('families').insert({name:name.trim()});
+      if(error){window.alert('Ajout impossible : '+error.message);return;}
+      await loadCategories();window.alert('Famille/catégorie ajoutée.');
+    }else if(action.trim()==='2'){
+      const choice=window.prompt('Numéro de la famille à renommer :\\n'+unique.map((f,i)=>`${i+1}. ${f.name}`).join('\\n'));
+      const i=Number(choice)-1;if(!Number.isInteger(i)||i<0||i>=unique.length)return;
+      const name=window.prompt('Nouveau nom :',unique[i].name);
+      if(!name||!name.trim())return;
+      if(unique.some((f,j)=>j!==i&&f.name.trim().toLocaleLowerCase('fr')===name.trim().toLocaleLowerCase('fr'))){window.alert('Ce nom existe déjà.');return;}
+      const {error}=await supabase.from('families').update({name:name.trim()}).eq('id',unique[i].id);
+      if(error){window.alert('Modification impossible : '+error.message);return;}
+      await loadCategories();window.alert('Nom modifié.');
+    }else if(action.trim()==='3'){
+      const choice=window.prompt('Numéro de la famille à supprimer :\\n'+unique.map((f,i)=>`${i+1}. ${f.name}`).join('\\n'));
+      const i=Number(choice)-1;if(!Number.isInteger(i)||i<0||i>=unique.length)return;
+      const f=unique[i];
+      const {count,error:countError}=await supabase.from('rp_topics').select('id',{count:'exact',head:true}).eq('family_id',f.id);
+      if(countError){window.alert('Je ne peux pas vérifier si cette famille contient des RP. Par sécurité, elle n’a pas été supprimée.');return;}
+      if(count>0){window.alert('Cette famille contient des sujets RP. Pour protéger les histoires, elle ne peut pas être supprimée. Renomme-la ou déplace ses sujets d’abord.');return;}
+      if(!window.confirm(`Supprimer « ${f.name} » ? Cette action ne peut pas être annulée.`))return;
+      const {error}=await supabase.from('families').delete().eq('id',f.id);
+      if(error){window.alert('Suppression impossible : '+error.message);return;}
+      await loadCategories();window.alert('Famille supprimée.');
+    }else return;
+  }
+  function populateTopicCategories(){ const rows=bunnylandFamilyRows||[]; const seen=new Set(); const unique=rows.filter(f=>{const name=String(f.name||'').trim();const key=name.toLocaleLowerCase('fr');if(!name||seen.has(key))return false;seen.add(key);return true;}); $('topicCategory').innerHTML=unique.map(f=>`<option value="${esc(f.id)}">${['University Dream','After Hour'].includes(f.name)?esc(f.name):'Famille '+esc(f.name)}</option>`).join(''); const selected=unique.find(f=>f.name===activeFamily);if(selected)$('topicCategory').value=selected.id; }
 
   async function loadFamilyTopics(family,familyId){
     activeFamily=family;activeCategory=null;
-    $('categoryList').classList.remove('hidden');$('familyRpCategoryList').classList.remove('hidden');$('postArea').classList.add('hidden');$('topicArea').classList.remove('hidden');$('topicHeading').textContent=['University Dream','After Hour'].includes(family)?family:'Famille '+family;$('topicList').innerHTML='<div class="empty">Chargement des sujets…</div>';
+    $('categoryList').classList.add('hidden');$('familyRpCategoryList').classList.add('hidden');$('familyCharactersSection').classList.add('hidden');$('postArea').classList.add('hidden');$('topicArea').classList.remove('hidden');$('topicHeading').textContent=['University Dream','After Hour'].includes(family)?family:'Famille '+family;$('topicList').innerHTML='<div class="empty">Chargement des sujets…</div>';
     if(!configured){$('topicList').innerHTML='<div class="notice error">La connexion à Bunnyland n’est pas configurée.</div>';return;}
     // Plusieurs lignes families peuvent partager le même nom. On les regroupe uniquement pour la recherche, sans modifier la base.
-    const familyIds=(bunnylandFamilyRows||[]).filter(f=>String(f.name||'').trim().toLocaleLowerCase('fr')===String(family||'').trim().toLocaleLowerCase('fr')).map(f=>f.id).filter(Boolean);
+    const familyIds=[...new Set((bunnylandFamilyRows||[]).filter(f=>String(f.name||'').trim().toLocaleLowerCase('fr')===String(family||'').trim().toLocaleLowerCase('fr')).map(f=>f.id).filter(Boolean))];
     if(!familyIds.length&&familyId)familyIds.push(familyId);
     if(!familyIds.length){$('topicList').innerHTML='<div class="notice error">Impossible de retrouver l’identifiant de cette famille.</div>';return;}
     const {data,error}=await supabase.from('rp_topics').select('id,family_id,author_id,title,created_at').in('family_id',familyIds).order('created_at',{ascending:false});
@@ -2494,6 +2557,111 @@ body.day-mode .family-showcase .family-symbol-card:hover .family-symbol {transfo
 .family-showcase .family-symbol-card>*{position:relative;z-index:1}
 .family-rp-section .category-card:focus-visible,.family-showcase .family-symbol-card:focus-visible{outline:2px solid #bd789f!important;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.family-rp-section .category-card,.family-rp-section .category-card:before,.family-showcase .family-symbol-card,.family-showcase .family-symbol,.family-showcase .family-symbol-card:before,.home-forum .category-card{transition:none!important;animation:none!important}.family-rp-section .category-card:hover,.family-rp-section .category-card:hover:before,.family-showcase .family-symbol-card:hover,.family-showcase .family-symbol-card:hover .family-symbol,.home-forum .category-card:hover{transform:none!important}}
+</style>
+
+
+<style id="bunnyland-mobile-rp-reference-v3">
+/* Mobile : largeur maîtrisée, composants qui respirent et aucun débordement horizontal. */
+html,body{max-width:100%;overflow-x:hidden!important}
+img,video,canvas,svg{max-width:100%}
+.shell,.app-shell,.page-shell,main{max-width:100%;}
+@media(max-width:760px){
+  body{font-size:14px!important}
+  .shell{width:100%!important;max-width:100%!important;margin:0!important;padding-left:10px!important;padding-right:10px!important}
+  .hero,.home-grid,.home-section-grid,.community-grid,.feature-grid{grid-template-columns:minmax(0,1fr)!important}
+  .hero-card,.feature-panel,.mini-panel,.community-card,.family-showcase,.family-characters-section,.family-rp-section,.panel,.card,.top3-panel,.recent-connections-panel{border-radius:18px!important;padding:14px!important;margin-left:0!important;margin-right:0!important;max-width:100%!important}
+  .brand h1,.hero h2,.family-showcase h2,.family-rp-section h2{font-size:clamp(24px,7vw,34px)!important;line-height:1.12!important}
+  .toolbar,.nav,.nav-tabs,.tabs,.sms-tabs{flex-wrap:wrap!important;gap:7px!important}
+  .toolbar button,.nav-button,.sms-tabs button{min-width:0!important;max-width:100%!important;white-space:normal!important}
+  .family-showcase .category-list,.family-rp-section .category-list,.home-forum .category-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+  .family-showcase .family-symbol-card,.family-rp-section .category-card,.home-forum .category-card,.home-forum .category-item,.home-forum .category{min-width:0!important;min-height:100px!important;padding:12px 8px!important;border-radius:13px!important;overflow-wrap:anywhere!important}
+  .family-showcase .family-symbol{width:38px!important;height:38px!important;flex-basis:38px!important;font-size:20px!important}
+  .family-showcase .family-symbol-copy h4,.family-rp-section .category-card h4,.home-forum .category-card h3{font-size:15px!important;line-height:1.25!important;overflow-wrap:anywhere!important}
+  #topicList .bunnyland-topic-row{grid-template-columns:minmax(0,1fr)!important;padding:12px!important;gap:10px!important;border-radius:15px!important}
+  #topicList .bunnyland-topic-row .topic-last{grid-column:1!important;grid-template-columns:44px minmax(0,1fr)!important;gap:9px!important}
+  #topicList .bunnyland-topic-row .topic-last-avatar{width:44px!important;height:44px!important;min-width:44px!important}
+  #topicList .bunnyland-topic-row .topic-delete{grid-column:1!important;grid-row:auto!important;justify-self:start!important}
+  #smsSection{width:100%!important;max-width:100%!important;overflow:hidden!important}
+  #smsSection .sms-layout,#smsSection .sms-main,#smsSection .sms-content{grid-template-columns:minmax(0,1fr)!important;display:grid!important;min-width:0!important}
+  #smsSection .sms-panel{min-width:0!important;max-width:100%!important;padding:12px!important}
+  #smsSection #smsMessages{min-height:220px!important;max-height:52vh!important;overflow-y:auto!important}
+  #smsSection .sms-thread{min-width:0!important;max-width:100%!important}
+  #smsSection input,#smsSection textarea,#replyForm input,#replyForm textarea,#replyForm select{min-width:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}
+  #replyForm,.reply-form,#postArea{padding:14px!important;max-width:100%!important;min-width:0!important}
+  button,.btn{max-width:100%!important}
+}
+@media(max-width:420px){
+  .shell{padding-left:7px!important;padding-right:7px!important}
+  .family-showcase .category-list,.family-rp-section .category-list,.home-forum .category-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .family-showcase .family-symbol-card,.family-rp-section .category-card,.home-forum .category-card,.home-forum .category-item,.home-forum .category{min-height:92px!important;padding:10px 6px!important}
+  .family-showcase .family-symbol-copy h4,.family-rp-section .category-card h4,.home-forum .category-card h3{font-size:14px!important}
+}
+/* RP : présentation proche de la référence mobile — identité sombre, texte sur carte claire, actions en pastilles. */
+#postsList .bunnyland-rp-editorial{overflow:hidden!important;border-radius:24px!important;border:1px solid #a97898!important;gap:0!important}
+#postsList .bunnyland-rp-editorial .post-character{background:#251923!important;color:#f7eff3!important;border-right:0!important;border-bottom:1px solid #59394b!important}
+#postsList .bunnyland-rp-editorial .post-character strong{color:#f7eff3!important}
+#postsList .bunnyland-rp-editorial .post-character small{color:#c6aebc!important}
+#postsList .bunnyland-rp-editorial .post-content{background:#fff7fb!important;color:#5b465d!important;border-left:5px solid #d99bc2!important;min-width:0!important;overflow-wrap:anywhere!important}
+#postsList .bunnyland-rp-editorial .post-kicker{color:#b56b95!important}
+#postsList .bunnyland-rp-editorial .post-number{background:#fffafd!important;color:#9a5b80!important;border-color:#efbfd7!important}
+#postsList .bunnyland-rp-editorial .post-author{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:8px!important;text-align:center!important;color:#55324e!important}
+#postsList .bunnyland-rp-editorial .post-author span{color:#55324e!important}
+#postsList .bunnyland-rp-editorial .post-author time{color:#9e7898!important}
+#postsList .bunnyland-rp-editorial .rp-post-body,#postsList .bunnyland-rp-editorial .rp-post-body p{color:#5d4a60!important;overflow-wrap:anywhere!important;word-break:normal!important}
+#postsList .bunnyland-rp-editorial .rp-dialogue{color:#897bc0!important;font-weight:700!important}
+#postsList .bunnyland-rp-editorial .rp-post-tools{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important}
+#postsList .bunnyland-rp-editorial .rp-post-tools button{border-radius:999px!important;background:#fffafd!important;color:#956082!important;border:1px solid #edbfd6!important}
+@media(max-width:760px){
+ #postsList .bunnyland-rp-editorial{display:flex!important;flex-direction:column!important;width:100%!important;max-width:100%!important;margin:0 0 18px!important;border-radius:22px!important}
+ #postsList .bunnyland-rp-editorial .post-character{display:grid!important;grid-template-columns:76px minmax(0,1fr)!important;grid-template-rows:auto auto!important;align-items:center!important;justify-items:start!important;gap:3px 13px!important;padding:15px 16px!important;text-align:left!important;min-width:0!important}
+ #postsList .bunnyland-rp-editorial .post-character img,#postsList .bunnyland-rp-editorial .post-avatar-placeholder{grid-column:1!important;grid-row:1 / span 2!important;width:70px!important;height:70px!important;min-width:70px!important;margin:0!important;border:4px solid #d99bc2!important;box-shadow:0 0 0 6px #4b3048!important}
+ #postsList .bunnyland-rp-editorial .post-character strong{grid-column:2!important;grid-row:1!important;align-self:end!important;font-size:22px!important;line-height:1.2!important}
+ #postsList .bunnyland-rp-editorial .post-character small{grid-column:2!important;grid-row:2!important;align-self:start!important;font-size:13px!important}
+ #postsList .bunnyland-rp-editorial .post-content{width:100%!important;max-width:100%!important;box-sizing:border-box!important;padding:17px 15px 16px!important;border-left:4px solid #d99bc2!important}
+ #postsList .bunnyland-rp-editorial .post-kicker{font-size:10px!important;letter-spacing:1.5px!important;margin-bottom:12px!important}
+ #postsList .bunnyland-rp-editorial .post-number{min-width:38px!important;height:32px!important}
+ #postsList .bunnyland-rp-editorial .post-author{font-size:22px!important;padding-bottom:14px!important;margin-bottom:16px!important}
+ #postsList .bunnyland-rp-editorial .post-author time{font-size:12px!important}
+ #postsList .bunnyland-rp-editorial .rp-post-body{font-size:16px!important;line-height:1.8!important;letter-spacing:0!important}
+ #postsList .bunnyland-rp-editorial .rp-post-tools{margin-top:19px!important;padding-top:15px!important;gap:8px!important}
+ #postsList .bunnyland-rp-editorial .rp-post-tools button{padding:9px 13px!important;font-size:13px!important}
+ #postsList .bunnyland-rp-editorial .rp-heart-count{font-size:12px!important}
+}
+/* Mode clair : identité du personnage prune, corps du RP crème rosé. */
+body.day-mode #postsList .bunnyland-rp-editorial .post-character{background:#38202f!important;color:#fff7fb!important;border-color:#ddc7ce!important}
+body.day-mode #postsList .bunnyland-rp-editorial .post-character strong{color:#fff7fb!important}
+body.day-mode #postsList .bunnyland-rp-editorial .post-character small{color:#e8d8ce!important}
+body.day-mode #postsList .bunnyland-rp-editorial .post-content{background:#fff7fb!important;color:#5d4a60!important;border-color:#d99bc2!important}
+@media(prefers-reduced-motion:reduce){#postsList .bunnyland-rp-editorial,#postsList .bunnyland-rp-editorial *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Correctifs Bunnyland : palette prune, notices sans bleu et listes compactes */
+:root { --bunny-plum:#251923; --bunny-panel:#38202F; --bunny-raspberry:#65334F; --bunny-rose:#BD789F; }
+.notice, .notice.info, .empty, .empty-state, .empty-state-box, .topic-empty, .family-empty,
+#topicList .empty, #familyCharactersNotice, #familyCharactersGrid .empty,
+#hanagramNotice, #hanagramMessage, .hanagram-notice, .info-banner {
+  background: #38202F !important; color: #F7EFF3 !important;
+  border-color: #65334F !important; box-shadow: none !important;
+}
+.family-rp-actions { display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; }
+.family-rp-actions .btn { font-size:12px !important; padding:9px 12px !important; min-height:36px !important; }
+.category-list { gap:10px !important; }
+.family-symbol-card, .family-rp-card, .category-card {
+  min-height:0 !important; padding:12px 14px !important; border-radius:14px !important;
+}
+.family-symbol-card { gap:10px !important; }
+.family-symbol-card .family-symbol { width:42px !important; height:42px !important; min-width:42px !important; font-size:22px !important; }
+.family-symbol-copy h4, .family-rp-card h4 { font-size:16px !important; line-height:1.25 !important; }
+.family-symbol-copy p, .family-rp-card p { font-size:10px !important; }
+.family-symbol-arrow { font-size:17px !important; }
+@media(max-width:700px){
+ .family-rp-actions { justify-content:stretch; width:100%; }
+ .family-rp-actions .btn { flex:1 1 100%; }
+ .category-list { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:8px !important; }
+ .family-symbol-card, .family-rp-card, .category-card { padding:10px !important; }
+ .family-symbol-card .family-symbol { width:36px !important; height:36px !important; min-width:36px !important; font-size:19px !important; }
+ .family-symbol-copy h4, .family-rp-card h4 { font-size:14px !important; overflow-wrap:anywhere; }
+}
+@media(max-width:420px){ .category-list { grid-template-columns:1fr !important; } }
 </style>
 
 </body>
