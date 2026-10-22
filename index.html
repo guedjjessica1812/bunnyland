@@ -4230,9 +4230,15 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
 <div class="overlay" id="authOverlay" role="dialog" aria-modal="true">
   <div class="modal auth-box">
     <div class="modal-head"><h3 id="authTitle">Connexion</h3><button class="x" data-close="authOverlay" aria-label="Fermer">×</button></div>
-    <p>Connecte-toi avec le compte qui t’a été attribué par l’administration Bunnyland. Les inscriptions publiques sont désactivées.</p>
+    <p id="authIntro">Connecte-toi à ton compte Bunnyland ou crée un compte pour rejoindre la communauté et créer tes personnages.</p>
     <div id="authMessage" class="notice hidden"></div>
-    <form id="authForm"><div class="form-item"><label for="email">Adresse e-mail</label><input class="field" id="email" type="email" autocomplete="username" required></div><div class="form-item"><label for="password">Mot de passe</label><input class="field" id="password" type="password" autocomplete="current-password" required minlength="8"></div><button class="btn primary" style="width:100%;margin-top:8px" type="submit">Se connecter</button></form>
+    <form id="authForm">
+      <div class="form-item" id="authUsernameWrap" hidden><label for="authUsername">Pseudo</label><input class="field" id="authUsername" type="text" maxlength="40" autocomplete="nickname" placeholder="Ton pseudo"></div>
+      <div class="form-item"><label for="email">Adresse e-mail</label><input class="field" id="email" type="email" autocomplete="username" required></div>
+      <div class="form-item"><label for="password">Mot de passe (8 caractères minimum)</label><input class="field" id="password" type="password" autocomplete="current-password" required minlength="8"></div>
+      <button class="btn primary" id="authSubmitBtn" style="width:100%;margin-top:8px" type="submit">Se connecter</button>
+    </form>
+    <button class="btn" id="authModeBtn" type="button" style="width:100%;margin-top:10px">Créer un compte</button>
   </div>
 </div>
 
@@ -4749,10 +4755,52 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     if(c){$('cName').value=c.name||'';$('cFaceclaim').value=c.faceclaim||'';$('cAge').value=c.age||'';$('cOccupation').value=c.occupation||'';$('cRelationship').value=c.relationship||c.relationship_status||'';$('cNeighborhood').value=c.neighborhood||c.district||'';$('cFamilyGroup').value=c.family_id||'';$('cDialogColor').value=/^#[0-9a-fA-F]{6}$/.test(c.dialog_color||'')?c.dialog_color:'#d9a7bb';$('cAvatar').value=c.avatar_url||c.image_url||c.cover_image||'';$('cDescription').value=c.description||c.biography||'';supabase.from('characters').select('private_notes').eq('id',c.id).maybeSingle().then(({data})=>{if(data)$('cSecrets').value=data.private_notes||''});}
     open('editOverlay');
   }
+  let authMode = 'login';
+  function setAuthMode(mode){
+    authMode=mode;
+    const registering=mode==='signup';
+    $('authTitle').textContent=registering?'Créer un compte':'Connexion';
+    $('authIntro').textContent=registering?'Crée ton compte Bunnyland pour rejoindre la communauté et créer tes personnages.':'Connecte-toi à ton compte Bunnyland.';
+    $('authUsernameWrap').hidden=!registering;
+    $('authUsername').required=registering;
+    $('authUsername').autocomplete=registering?'nickname':'off';
+    $('authSubmitBtn').textContent=registering?'Créer mon compte':'Se connecter';
+    $('authModeBtn').textContent=registering?'J’ai déjà un compte':'Créer un compte';
+    $('password').autocomplete=registering?'new-password':'current-password';
+    $('authMessage').classList.add('hidden');
+  }
+  $('authModeBtn').addEventListener('click',()=>setAuthMode(authMode==='login'?'signup':'login'));
   $('authForm').addEventListener('submit',async e=>{
-    e.preventDefault();if(!configured){showMessage('authMessage','La connexion Supabase n’est pas encore configurée.','error');return;}
-    const {error}=await supabase.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});
-    if(error)showMessage('authMessage',error.message,'error');else close('authOverlay');
+    e.preventDefault();
+    if(!configured){showMessage('authMessage','La connexion Supabase n’est pas encore configurée.','error');return;}
+    const email=$('email').value.trim(), password=$('password').value;
+    $('authSubmitBtn').disabled=true;
+    try{
+      if(authMode==='signup'){
+        const username=$('authUsername').value.trim();
+        if(!username){showMessage('authMessage','Choisis un pseudo.','error');return;}
+        const {data,error}=await supabase.auth.signUp({email,password,options:{data:{username,display_name:username}}});
+        if(error){showMessage('authMessage',error.message,'error');return;}
+        if(data.session){
+          session=data.session;
+          // Si un profil est créé automatiquement par Supabase, compléter son pseudo.
+          const {error:profileError}=await supabase.from('profiles').upsert({id:data.user.id,username,display_name:username,role:'member',approved:true},{onConflict:'id'});
+          if(profileError)console.warn('Le compte est créé ; le profil membre devra peut-être être complété via le déclencheur Supabase.',profileError);
+          close('authOverlay');setAuthMode('login');
+          await refreshProfile();updateNav();await loadCharacters();await loadMembers();
+          noticeTop('Bienvenue sur Bunnyland ! Tu peux créer tes personnages.','success');
+        }else{
+          showMessage('authMessage','Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi ici.','success');
+          setAuthMode('login');
+        }
+      }else{
+        const {data,error}=await supabase.auth.signInWithPassword({email,password});
+        if(error){showMessage('authMessage',error.message,'error');return;}
+        session=data.session;close('authOverlay');setAuthMode('login');
+        await refreshProfile();updateNav();await loadCharacters();await loadMembers();
+      }
+    }catch(err){showMessage('authMessage','Une erreur est survenue : '+(err?.message||'réessaie.'),'error');}
+    finally{$('authSubmitBtn').disabled=false;}
   });
   $('cAvatarChooseBtn')?.addEventListener('click',()=>{if(!session){noticeTop('Connecte-toi pour ajouter une photo.');open('authOverlay');return;}$('cAvatarFile')?.click();});
   $('cAvatarFile')?.addEventListener('change',()=>{const file=$('cAvatarFile').files?.[0];const status=$('cAvatarFileStatus');if(!file){if(status)status.textContent='Ou choisir une photo sur ton appareil';return;}if(!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)){showMessage('editMessage','Format non accepté : choisis un JPEG, PNG, WebP ou GIF.','error');$('cAvatarFile').value='';return;}if(file.size>10*1024*1024){showMessage('editMessage','La photo doit faire 10 Mo maximum.','error');$('cAvatarFile').value='';return;}if(status)status.textContent='Photo sélectionnée : '+file.name;$('cAvatar').value='';});
