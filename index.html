@@ -4066,7 +4066,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
 <div class="shell">
   <header>
     <div class="brand"><div class="seal">花</div><div><h1>Bunnyland</h1><small>Une île, mille histoires</small></div></div>
-    <nav><button class="btn" id="homeBtn">Accueil & forum</button><button class="btn" id="forumBtn">Les lieux ↓</button><button class="btn" id="charactersBtn">Personnages</button><button class="btn" id="instagramBtn">Instagram</button><button class="btn" id="smsBtn">SMS privés</button><button class="btn" id="bunnyNotificationsBtn" type="button" aria-expanded="false" aria-controls="bunnyNotificationsPanel">♧ Notifications <span id="bunnyNotificationsBadge" aria-label="notifications non lues">0</span></button><button class="btn" id="loginBtn">Connexion</button><button class="btn primary hidden" id="newBtn">＋ Ajouter un personnage</button><button class="btn hidden" id="logoutBtn">Déconnexion</button></nav>
+    <nav><button class="btn" id="homeBtn">Accueil & forum</button><button class="btn" id="forumBtn">Les lieux ↓</button><button class="btn" id="charactersBtn">Personnages</button><button class="btn" id="instagramBtn">Instagram</button><button class="btn" id="smsBtn">SMS privés</button><button class="btn" id="nobuBlogBtn">Le blog de Nobu ✦</button><button class="btn" id="bunnyNotificationsBtn" type="button" aria-expanded="false" aria-controls="bunnyNotificationsPanel">♧ Notifications <span id="bunnyNotificationsBadge" aria-label="notifications non lues">0</span></button><button class="btn" id="loginBtn">Connexion</button><button class="btn primary hidden" id="newBtn">＋ Ajouter un personnage</button><button class="btn hidden" id="logoutBtn">Déconnexion</button></nav>
   </header>
   <section id="bunnyNotificationsPanel" role="dialog" aria-label="Notifications Bunnyland" aria-hidden="true">
     <div class="bunny-notif-head">
@@ -4177,6 +4177,12 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   </section>
 
   
+<section id="nobuBlogSection" class="hidden" style="max-width:1000px;margin:30px auto;padding:clamp(18px,4vw,36px);border:1px solid var(--line,#6b4b5c);border-radius:22px;background:var(--panel,rgba(45,30,43,.8));">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap"><div><div class="eyebrow">LES MURS ONT DES OREILLES…</div><h2 style="font-family:Georgia,serif;font-size:clamp(2rem,5vw,3.2rem);margin:.25em 0">Le blog de Nobu</h2><p style="margin:0;opacity:.8">Les rumeurs de l’île, racontées par Nobu. 👀</p></div><button class="btn primary hidden" id="nobuNewRumorBtn" type="button">＋ Publier une rumeur</button></div>
+  <p id="nobuBlogNotice" class="notice hidden" aria-live="polite"></p>
+  <form id="nobuRumorForm" class="hidden" style="margin:24px 0;padding:18px;border:1px solid var(--line,#6b4b5c);border-radius:16px" autocomplete="off"><input id="nobuRumorId" type="hidden"><label for="nobuRumorTitle">Titre de la rumeur</label><input id="nobuRumorTitle" class="field" maxlength="120" required placeholder="Une rumeur circule…" style="display:block;width:100%;margin:8px 0 14px"><label for="nobuRumorBody">La rumeur</label><textarea id="nobuRumorBody" class="field" rows="5" maxlength="5000" required placeholder="Alors, voilà ce qu’on raconte…" style="display:block;width:100%;margin:8px 0 14px;resize:vertical"></textarea><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit">Enregistrer</button><button class="btn" id="nobuCancelRumorBtn" type="button">Annuler</button></div></form>
+  <div id="nobuRumorsList" style="display:grid;gap:16px;margin-top:24px"><p>Chargement des rumeurs…</p></div>
+</section>
 <section id="instagramSection" class="hidden"><div class="insta-shell">
 <div class="insta-head"><div><div class="eyebrow">LE RÉSEAU DES PERSONNAGES</div><div class="insta-logo">bunnyland</div></div><div class="insta-head-actions"><button class="btn" id="instaRefreshBtn">↻ Actualiser</button><button class="btn primary" id="instaComposeBtn">＋ Publier</button></div></div>
 <div id="instaNotice" class="notice hidden"></div><div class="insta-active-character"><label for="instaInteractionCharacter">Interagir en tant que</label><select id="instaInteractionCharacter" class="field"><option value="">Choisir un personnage…</option></select></div>
@@ -4302,6 +4308,10 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   $('charactersBtn').addEventListener('click',()=>{showPage('characters');window.scrollTo({top:0,behavior:'smooth'})});
   $('instagramBtn').addEventListener('click',()=>showPage('instagram'));
   $('smsBtn').addEventListener('click',()=>showPage('sms'));
+  $('nobuBlogBtn').addEventListener('click',()=>showPage('nobuBlog'));
+  $('nobuNewRumorBtn').addEventListener('click',()=>{if(!session){open('authOverlay');showNobuBlogNotice('Connecte-toi avec le compte de Nobu pour publier.','error');return;} $('nobuRumorId').value='';$('nobuRumorTitle').value='';$('nobuRumorBody').value='';$('nobuRumorForm').classList.remove('hidden');$('nobuRumorTitle').focus();});
+  $('nobuCancelRumorBtn').addEventListener('click',()=>{ $('nobuRumorForm').reset();$('nobuRumorForm').classList.add('hidden');});
+  $('nobuRumorForm').addEventListener('submit',saveNobuRumor);
   $('smsRefreshBtn').addEventListener('click',loadSms);
   $('smsComposeForm').addEventListener('submit',replyToOpenSmsTopic);
   $('smsNewBtn').addEventListener('click',async()=>{if(!session){open('authOverlay');smsNotice('Connecte-toi pour créer un sujet.','error');return;}await loadCharacters();await populateSmsCharacters();$('smsCreateTopicNotice').classList.add('hidden');open('smsNewMessageOverlay');});
@@ -4338,6 +4348,8 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   $('bunnyAdminAdd')?.addEventListener('click',addBunnyFamily);
   $('newTopicBtnSecondary').addEventListener('click',async()=>{if(!session){noticeTop('Connecte-toi pour créer un sujet.');open('authOverlay');return;}if(!allCharacters.length)await loadCharacters();populateTopicCategories();await populateTopicCharacterPicker();hideMessage('topicCreateMessage');open('topicCreateOverlay')});
   $('loginBtn').addEventListener('click',()=>{hideMessage('authMessage');setAuthMode('login');open('authOverlay')});
+  // Toujours réinitialiser la fenêtre d’authentification en mode connexion lorsqu’elle s’ouvre.
+  document.querySelectorAll('[data-close="authOverlay"]').forEach(btn=>btn.addEventListener('click',()=>setAuthMode('login')));
   $('logoutBtn').addEventListener('click',async()=>{await supabase?.auth.signOut();});
   $('newBtn').addEventListener('click',()=>editCharacter());
   $('search').addEventListener('input',renderCards);
@@ -4644,7 +4656,21 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     repliesEl.innerHTML=posts.map(p=>{const t=topicNames.get(p.topic_id);const excerpt=String(p.content||'').replace(/\s+/g,' ').trim().slice(0,100);return `<button class="live-item" data-live-topic="${esc(p.topic_id)}"><strong>${esc(t?.title||'Discussion')}</strong><small>${esc(cats.get(t?.category_id)||'Forum')} · ${esc(ago(p.created_at))}${excerpt?' · '+esc(excerpt):''}</small></button>`}).join('')||'<p class="activity-empty">Aucune réponse pour le moment. Les conversations commencent ici.</p>';
     repliesEl.querySelectorAll('[data-live-topic]').forEach(b=>b.addEventListener('click',async()=>{showPage('forum');await loadCategories();await loadPosts(b.dataset.liveTopic);window.scrollTo({top:0,behavior:'smooth'});}));
   }
-  function showPage(page){const homeView=page==='home'||page==='forum';$('forumSection').classList.toggle('hidden',!homeView);$('charactersSection').classList.toggle('hidden',page!=='characters');$('membersSection').classList.toggle('hidden',page!=='members');$('instagramSection').classList.toggle('hidden',page!=='instagram');$('smsSection').classList.toggle('hidden',page!=='sms');document.querySelector('body > .shell > .hero')?.classList.toggle('hidden',page!=='home');$('homeDashboard').classList.toggle('hidden',page!=='home');if(page==='instagram')loadInstagram();if(page==='sms')loadSms();}
+  function showPage(page){const homeView=page==='home'||page==='forum';$('forumSection').classList.toggle('hidden',!homeView);$('charactersSection').classList.toggle('hidden',page!=='characters');$('membersSection').classList.toggle('hidden',page!=='members');$('instagramSection').classList.toggle('hidden',page!=='instagram');$('smsSection').classList.toggle('hidden',page!=='sms');$('nobuBlogSection').classList.toggle('hidden',page!=='nobuBlog');document.querySelector('body > .shell > .hero')?.classList.toggle('hidden',page!=='home');$('homeDashboard').classList.toggle('hidden',page!=='home');if(page==='instagram')loadInstagram();if(page==='sms')loadSms();if(page==='nobuBlog')loadNobuRumors();}
+  function canManageNobuBlog(){return !!session && (String(myProfile?.username||'').trim().toLowerCase()==='nobu' || String(myProfile?.display_name||'').trim().toLowerCase()==='nobu');}
+  function showNobuBlogNotice(msg,type=''){const el=$('nobuBlogNotice');el.textContent=msg;el.className='notice'+(type?' '+type:'');el.classList.remove('hidden');}
+  async function loadNobuRumors(){
+    $('nobuNewRumorBtn').classList.toggle('hidden',!canManageNobuBlog());
+    const list=$('nobuRumorsList');list.innerHTML='<p>Chargement des rumeurs…</p>';
+    if(!configured){list.innerHTML='<p>Le blog nécessite la connexion à Supabase.</p>';return;}
+    const {data,error}=await supabase.from('nobu_rumors').select('id,title,body,created_at,updated_at').order('created_at',{ascending:false});
+    if(error){list.innerHTML='<p>Le blog n’est pas encore connecté à sa table de rumeurs. Il reste une petite étape de configuration.</p>';console.error('nobu_rumors',error);return;}
+    const canEditNobu=canManageNobuBlog();
+    list.innerHTML=(data||[]).map(r=>`<article style="padding:20px;border:1px solid var(--line,#6b4b5c);border-radius:16px;background:rgba(255,255,255,.035)"><div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;opacity:.7">RUMEUR DE L’ÎLE · ${esc(new Date(r.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}))}</div><h3 style="font-family:Georgia,serif;font-size:1.55rem;margin:10px 0">${esc(r.title)}</h3><div style="white-space:pre-wrap;line-height:1.7">${esc(r.body)}</div>${canEditNobu?`<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap"><button class="btn" data-nobu-edit="${esc(r.id)}" type="button">Modifier</button><button class="btn" data-nobu-delete="${esc(r.id)}" type="button">Supprimer</button></div>`:''}</article>`).join('')||'<div style="padding:28px;text-align:center;opacity:.75;border:1px dashed var(--line,#6b4b5c);border-radius:16px">Aucune rumeur pour le moment… Nobu prépare peut-être quelque chose. 🌙</div>';
+    list.querySelectorAll('[data-nobu-edit]').forEach(b=>b.addEventListener('click',()=>{const r=(data||[]).find(x=>String(x.id)===b.dataset.nobuEdit);if(!r)return;$('nobuRumorId').value=r.id;$('nobuRumorTitle').value=r.title;$('nobuRumorBody').value=r.body;$('nobuRumorForm').classList.remove('hidden');$('nobuRumorTitle').focus();}));
+    list.querySelectorAll('[data-nobu-delete]').forEach(b=>b.addEventListener('click',async()=>{const r=(data||[]).find(x=>String(x.id)===b.dataset.nobuDelete);if(!r||!confirm('Supprimer définitivement cette rumeur ?'))return;const {error}=await supabase.from('nobu_rumors').delete().eq('id',r.id);if(error){showNobuBlogNotice('Suppression impossible : '+error.message,'error');return;}showNobuBlogNotice('Rumeur supprimée.');await loadNobuRumors();}));
+  }
+  async function saveNobuRumor(e){e.preventDefault();if(!canManageNobuBlog()){showNobuBlogNotice('Seul le compte Nobu peut publier ou modifier les rumeurs.','error');return;}const title=$('nobuRumorTitle').value.trim(),body=$('nobuRumorBody').value.trim(),id=$('nobuRumorId').value;if(!title||!body)return;const payload={title,body,updated_at:new Date().toISOString()};let result;if(id)result=await supabase.from('nobu_rumors').update(payload).eq('id',id);else result=await supabase.from('nobu_rumors').insert({...payload,author_id:session.user.id});if(result.error){showNobuBlogNotice('Enregistrement impossible : '+result.error.message,'error');return;}$('nobuRumorForm').reset();$('nobuRumorForm').classList.add('hidden');showNobuBlogNotice(id?'Rumeur modifiée !':'Rumeur publiée !');await loadNobuRumors();}
   function noticeTop(msg,type=''){  $('topMessage').textContent=msg; $('topMessage').className='notice top-message show'+(type?' '+type:''); }
   function updateNav(){
     $('loginBtn').classList.toggle('hidden',!!session);
@@ -4654,7 +4680,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   async function refreshProfile(){
     myProfile=null;
     if(!session) return;
-    const {data,error}=await supabase.from('profiles').select('id,display_name,role,approved').eq('id',session.user.id).maybeSingle();
+    const {data,error}=await supabase.from('profiles').select('id,username,display_name,role,approved').eq('id',session.user.id).maybeSingle();
     if(error){console.error(error);return;}
     myProfile=data;
     if(data && data.approved===false) noticeTop('Ton compte est en attente de validation par l’administration.','error');
@@ -4667,7 +4693,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     $('cards').innerHTML='<div class="empty"><strong>Le jardin s’éveille…</strong>Les personnages arrivent, cela peut prendre quelques secondes.</div>';
     // Bunnyland peut ne pas avoir la RPC list_public_characters(). On lit donc
     // les champs publics de la table characters directement, sans lire private_notes.
-    const characterFields='id,creator_id,name,faceclaim,age,occupation,relationship,relationship_status,neighborhood,district,family_id,family_name,dialogue_color,image_url,cover_image,biography,powers,is_public,created_at,updated_at';
+    const characterFields='id,creator_id,owner_id,name,faceclaim,age,occupation,relationship,relationship_status,neighborhood,district,family_id,family_name,dialogue_color,image_url,cover_image,biography,powers,is_public,created_at,updated_at';
     let rows=[], queryError=null;
     const {data:publicRows,error:publicError}=await supabase.from('characters')
       .select(characterFields).eq('is_public',true).order('name');
