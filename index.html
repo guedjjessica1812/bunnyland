@@ -4420,7 +4420,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     const {data:activeStories, error:storiesError}=await supabase.from('bunnygram_stories').select('id,author_id,character_id,image_url,caption,created_at,expires_at').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(40);
     const storyChars=new Map((allCharacters||[]).map(c=>[c.id,c]));
     const storyIds=[...new Set((activeStories||[]).map(st=>st.character_id).filter(Boolean))];
-    if(storyIds.length){const {data:extraStoryChars}=await supabase.from('characters').select('id,name,avatar_url,owner_id').in('id',storyIds);(extraStoryChars||[]).forEach(c=>storyChars.set(c.id,c));}
+    if(storyIds.length){const {data:extraStoryChars}=await supabase.from('characters').select('id,name,avatar_url,creator_id').in('id',storyIds);(extraStoryChars||[]).forEach(c=>storyChars.set(c.id,{...c,owner_id:c.creator_id}));}
     const mineForStory=(allCharacters||[]).filter(c=>session&&c.owner_id===session.user.id);
     const storySelect=$('instaStoryAuthor');if(storySelect){storySelect.innerHTML='<option value="">Choisir un personnage…</option>'+mineForStory.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');if(mineForStory.length===1)storySelect.value=mineForStory[0].id;}
     stories.innerHTML=`<button type="button" class="insta-story-add" id="instaStoryAddCircle" aria-label="Ajouter une story"><span class="insta-story-ring"><span>＋</span></span><span>Ta story</span></button>`+((activeStories||[]).map(st=>{const c=storyChars.get(st.character_id)||{};return `<button type="button" class="insta-story" data-insta-story="${esc(st.id)}" data-story-image="${esc(st.image_url)}" data-story-caption="${esc(st.caption||'')}"><span class="insta-story-ring"><img src="${esc(st.image_url||c.avatar_url||'')}" alt="" loading="lazy"></span><span>${esc(c.name||'Story')}</span></button>`;}).join(''));
@@ -4444,7 +4444,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
       const charIds=[...new Set(rows.map(p=>p.character_id).filter(Boolean))];
       const userIds=[...new Set(rows.map(p=>p.author_id).filter(Boolean))];
       const chars=new Map((allCharacters||[]).map(c=>[c.id,c]));
-      if(charIds.length){const {data:extra}=await supabase.from('characters').select('id,name,avatar_url,owner_id,faceclaim,neighborhood').in('id',charIds);(extra||[]).forEach(c=>chars.set(c.id,c));}
+      if(charIds.length){const {data:extra}=await supabase.from('characters').select('id,name,avatar_url,creator_id,faceclaim,neighborhood').in('id',charIds);(extra||[]).forEach(c=>chars.set(c.id,{...c,owner_id:c.creator_id}));}
       const profiles=new Map();
       if(userIds.length){const {data:people}=await supabase.from('profiles').select('id,username,display_name,avatar_url').in('id',userIds);(people||[]).forEach(p=>profiles.set(p.id,p));}
       const postIds=rows.map(p=>p.id);
@@ -4458,7 +4458,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
       const commentAuthors=[...new Set((comments||[]).map(c=>c.author_id).filter(Boolean))];
       if(commentAuthors.length){const {data:people}=await supabase.from('profiles').select('id,username,display_name,avatar_url').in('id',commentAuthors);(people||[]).forEach(p=>profiles.set(p.id,p));}
       const interactionCharacterIds=[...new Set([...(comments||[]).map(c=>c.character_id),...(reactions||[]).map(r=>r.character_id)].filter(Boolean))];
-      if(interactionCharacterIds.length){const {data:interactionCharacters}=await supabase.from('characters').select('id,name,avatar_url,owner_id').in('id',interactionCharacterIds);(interactionCharacters||[]).forEach(c=>chars.set(c.id,c));}
+      if(interactionCharacterIds.length){const {data:interactionCharacters}=await supabase.from('characters').select('id,name,avatar_url,creator_id').in('id',interactionCharacterIds);(interactionCharacters||[]).forEach(c=>chars.set(c.id,{...c,owner_id:c.creator_id}));}
       feed.innerHTML=rows.map(p=>{
         const c=chars.get(p.character_id)||{},profile=profiles.get(p.author_id)||{};
         const author=c.name||profile.display_name||profile.username||'Personnage de Bunnyland';
@@ -4693,7 +4693,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     $('cards').innerHTML='<div class="empty"><strong>Le jardin s’éveille…</strong>Les personnages arrivent, cela peut prendre quelques secondes.</div>';
     // Bunnyland peut ne pas avoir la RPC list_public_characters(). On lit donc
     // les champs publics de la table characters directement, sans lire private_notes.
-    const characterFields='id,creator_id,owner_id,name,faceclaim,age,occupation,relationship,relationship_status,neighborhood,district,family_id,family_name,dialogue_color,image_url,cover_image,biography,powers,is_public,created_at,updated_at';
+    const characterFields='id,creator_id,name,faceclaim,age,occupation,relationship,relationship_status,neighborhood,district,family_id,family_name,dialogue_color,image_url,cover_image,biography,powers,is_public,created_at,updated_at';
     let rows=[], queryError=null;
     const {data:publicRows,error:publicError}=await supabase.from('characters')
       .select(characterFields).eq('is_public',true).order('name');
