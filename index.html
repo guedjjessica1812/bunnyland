@@ -5335,7 +5335,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   // Centre de notifications Bunnyland : lecture des notifications destinées au compte connecté.
   let bunnyNotificationRows = [];
   let bunnyNotificationChannel = null;
-  const BUNNYLAND_VAPID_PUBLIC_KEY = 'BHijHtzAKc3HEbUR9EJ7LDMnVGp-4k2-qsGulf2bQDzNgD-s4qzslu1bn41YErIqXRSV88NZl_Y1TrQH_durPrQ';
+  const BUNNYLAND_VAPID_PUBLIC_KEY = 'BFHfo-wU8gVC7mKuPBprAZIsc-2LdX77RKlNxoLvwldv6VWVA_tEVKMjxYmFv3vWTl7aAsxbCajUv1ZYZdX0x08';
   function bunnyNotifRelative(value){if(!value)return '';const mins=Math.max(0,Math.floor((Date.now()-new Date(value).getTime())/60000));if(mins<1)return 'À l’instant';if(mins<60)return `Il y a ${mins} min`;const h=Math.floor(mins/60);if(h<24)return `Il y a ${h} h`;return `Il y a ${Math.floor(h/24)} j`;}
   function bunnyNotifLabel(n){const who=n.actor_character_name||'Un personnage';const what=({comment:'a commenté une publication',reply:'a répondu à un commentaire',like:'a aimé une publication',message:'t’a envoyé un message',rp_reply:'a répondu à ton sujet RP'})[n.kind]||n.message||'Nouvelle activité';return `${who} ${what}`;}
   function renderBunnyNotifications(){
