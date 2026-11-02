@@ -5337,7 +5337,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   let bunnyNotificationChannel = null;
   const BUNNYLAND_VAPID_PUBLIC_KEY = 'BFHfo-wU8gVC7mKuPBprAZIsc-2LdX77RKlNxoLvwldv6VWVA_tEVKMjxYmFv3vWTl7aAsxbCajUv1ZYZdX0x08';
   function bunnyNotifRelative(value){if(!value)return '';const mins=Math.max(0,Math.floor((Date.now()-new Date(value).getTime())/60000));if(mins<1)return 'À l’instant';if(mins<60)return `Il y a ${mins} min`;const h=Math.floor(mins/60);if(h<24)return `Il y a ${h} h`;return `Il y a ${Math.floor(h/24)} j`;}
-  function bunnyNotifLabel(n){const who=n.actor_character_name||'Un personnage';const what=({comment:'a commenté une publication',reply:'a répondu à un commentaire',like:'a aimé une publication',message:'t’a envoyé un message',rp_reply:'a répondu à ton sujet RP'})[n.kind]||n.message||'Nouvelle activité';return `${who} ${what}`;}
+  function bunnyNotifLabel(n){const who=n.actor_character_name||'Un personnage';const what=({comment:'a commenté une publication',reply:'a répondu à un commentaire',like:'a aimé une publication',message:'t’a envoyé un message',rp_reply:'a répondu à ton sujet RP',sms_reply:'a répondu à un sujet SMS'})[n.kind]||n.message||'Nouvelle activité';return `${who} ${what}`;}
   function renderBunnyNotifications(){
     const host=$('bunnyNotificationsList'),badge=$('bunnyNotificationsBadge');if(!host||!badge)return;
     const unread=bunnyNotificationRows.filter(n=>!n.is_read).length;badge.textContent=unread>99?'99+':String(unread);badge.classList.toggle('show',unread>0);
@@ -5348,7 +5348,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   }
   async function loadBunnyNotifications(){
     if(!configured||!session){bunnyNotificationRows=[];renderBunnyNotifications();return;}
-    const {data,error}=await supabase.from('bunnyland_notifications').select('id,recipient_id,actor_id,actor_character_id,kind,post_id,comment_id,conversation_id,rp_topic_id,message,is_read,created_at').eq('recipient_id',session.user.id).order('created_at',{ascending:false}).limit(40);
+    const {data,error}=await supabase.from('bunnyland_notifications').select('id,recipient_id,actor_id,actor_character_id,kind,post_id,comment_id,conversation_id,rp_topic_id,sms_topic_id,message,is_read,created_at').eq('recipient_id',session.user.id).order('created_at',{ascending:false}).limit(40);
     if(error){console.error('Bunnyland notifications:',error);$('bunnyNotificationsList').innerHTML='<div class="bunny-notif-empty">Impossible de charger les notifications. Vérifie les autorisations Supabase.</div>';return;}
     const rows=data||[];const ids=[...new Set(rows.map(n=>n.actor_character_id).filter(Boolean))];let names=new Map();
     if(ids.length){const {data:chars}=await supabase.from('characters').select('id,name').in('id',ids);(chars||[]).forEach(c=>names.set(String(c.id),c.name));}
@@ -5361,6 +5361,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     if(n.kind==='message'&&n.conversation_id){showPage('sms');await loadSms();}
     else if(['like','comment','reply'].includes(n.kind)){showPage('instagram');await loadInstagram();}
     else if(n.kind==='rp_reply'&&n.rp_topic_id){showPage('forum');await loadCategories();await loadPosts(n.rp_topic_id);}
+    else if(n.kind==='sms_reply'&&n.sms_topic_id){activeOpenSmsTopic=String(n.sms_topic_id);showPage('sms');await loadSms();}
     window.scrollTo({top:0,behavior:'smooth'});
   }
   async function markAllBunnyNotificationsRead(){
