@@ -5218,35 +5218,33 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   function smsCharacter(id){return allCharacters.find(c=>String(c.id)===String(id));}
   function smsEscapeAvatar(c){return c?.avatar_url?`<img src="${esc(c.avatar_url)}" alt="">`:esc((c?.name||'花').charAt(0));}
   let openSmsTopics=[],openSmsReplies=[],activeOpenSmsTopic=null,activeSmsSenderId='';
-  // Bunnyland : mémorise le personnage choisi séparément pour chaque conversation SMS.
+  // Mémorisation Bunnyland : un personnage différent peut être associé à chaque conversation.
   function smsSenderMemoryKey(){return 'bunnyland_sms_sender_by_topic_'+String(session?.user?.id||'guest');}
-  function readSmsSenderMemory(){
-    try{return JSON.parse(localStorage.getItem(smsSenderMemoryKey())||'{}')||{};}catch(_){return {};}
-  }
+  function readSmsSenderMemory(){try{return JSON.parse(localStorage.getItem(smsSenderMemoryKey())||'{}')||{};}catch(_){return {};}}
   function rememberSmsSender(topicId,characterId){
     if(!session?.user?.id||!topicId||!characterId)return;
-    const memory=readSmsSenderMemory();
-    memory[String(topicId)]=String(characterId);
+    const memory=readSmsSenderMemory();memory[String(topicId)]=String(characterId);
     try{localStorage.setItem(smsSenderMemoryKey(),JSON.stringify(memory));}catch(_){}
   }
   function restoreSmsSender(topicId){
-    const remembered=readSmsSenderMemory()[String(topicId)];
     const own=ownSmsCharacters();
-    const chosen=own.find(c=>String(c.id)===String(remembered));
+    const memory=readSmsSenderMemory();
+    let chosen=own.find(c=>String(c.id)===String(memory[String(topicId)]));
+    // Première visite : reprendre le dernier personnage que le membre a utilisé dans ce sujet.
+    if(!chosen){
+      const lastMine=[...openSmsReplies].reverse().find(r=>String(r.topic_id)===String(topicId)&&String(r.author_user_id)===String(session?.user?.id));
+      chosen=own.find(c=>String(c.id)===String(lastMine?.author_character_id));
+    }
+    // Si le membre a créé le sujet avec l'un de ses personnages, le reprendre.
+    if(!chosen){
+      const topic=openSmsTopics.find(t=>String(t.id)===String(topicId));
+      chosen=own.find(c=>String(c.id)===String(topic?.author_character_id));
+    }
+    if(!chosen)chosen=own.find(c=>String(c.id)===String(activeSmsSenderId))||own[0];
     if(chosen){
       activeSmsSenderId=String(chosen.id);
-      $('smsSenderCharacter').value=String(chosen.id);
-    }else{
-      const current=own.find(c=>String(c.id)===String(activeSmsSenderId||$('smsSenderCharacter').value||''));
-      if(current){
-        activeSmsSenderId=String(current.id);
-        $('smsSenderCharacter').value=String(current.id);
-        rememberSmsSender(topicId,current.id);
-      }else if(own.length){
-        activeSmsSenderId=String(own[0].id);
-        $('smsSenderCharacter').value=String(own[0].id);
-        rememberSmsSender(topicId,own[0].id);
-      }
+      const select=$('smsSenderCharacter');if(select)select.value=String(chosen.id);
+      rememberSmsSender(topicId,chosen.id);
     }
     updateOpenSmsSender();
   }
