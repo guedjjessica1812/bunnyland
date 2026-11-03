@@ -5218,6 +5218,38 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   function smsCharacter(id){return allCharacters.find(c=>String(c.id)===String(id));}
   function smsEscapeAvatar(c){return c?.avatar_url?`<img src="${esc(c.avatar_url)}" alt="">`:esc((c?.name||'花').charAt(0));}
   let openSmsTopics=[],openSmsReplies=[],activeOpenSmsTopic=null,activeSmsSenderId='';
+  // Bunnyland : mémorise le personnage choisi séparément pour chaque conversation SMS.
+  function smsSenderMemoryKey(){return 'bunnyland_sms_sender_by_topic_'+String(session?.user?.id||'guest');}
+  function readSmsSenderMemory(){
+    try{return JSON.parse(localStorage.getItem(smsSenderMemoryKey())||'{}')||{};}catch(_){return {};}
+  }
+  function rememberSmsSender(topicId,characterId){
+    if(!session?.user?.id||!topicId||!characterId)return;
+    const memory=readSmsSenderMemory();
+    memory[String(topicId)]=String(characterId);
+    try{localStorage.setItem(smsSenderMemoryKey(),JSON.stringify(memory));}catch(_){}
+  }
+  function restoreSmsSender(topicId){
+    const remembered=readSmsSenderMemory()[String(topicId)];
+    const own=ownSmsCharacters();
+    const chosen=own.find(c=>String(c.id)===String(remembered));
+    if(chosen){
+      activeSmsSenderId=String(chosen.id);
+      $('smsSenderCharacter').value=String(chosen.id);
+    }else{
+      const current=own.find(c=>String(c.id)===String(activeSmsSenderId||$('smsSenderCharacter').value||''));
+      if(current){
+        activeSmsSenderId=String(current.id);
+        $('smsSenderCharacter').value=String(current.id);
+        rememberSmsSender(topicId,current.id);
+      }else if(own.length){
+        activeSmsSenderId=String(own[0].id);
+        $('smsSenderCharacter').value=String(own[0].id);
+        rememberSmsSender(topicId,own[0].id);
+      }
+    }
+    updateOpenSmsSender();
+  }
   function ownSmsCharacters(){return (allCharacters||[]).filter(c=>session&&String(c.owner_id)===String(session.user.id));}
   async function populateSmsCharacters(){
     if(!session){$('smsSenderCharacter').innerHTML='<option value="">Connecte-toi…</option>';return;}
@@ -5231,7 +5263,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     if(!session){open('authOverlay');return;}await loadCharacters();await populateSmsCharacters();
     const own=ownSmsCharacters(), current=String(activeSmsSenderId||$('smsSenderCharacter').value||'');
     $('smsCharacterPickerGrid').innerHTML=own.map(c=>`<button type="button" class="sms-character-option" data-sms-pick-character="${esc(c.id)}" aria-pressed="${String(c.id)===current?'true':'false'}"><span class="sms-avatar">${smsEscapeAvatar(c)}</span><strong>${esc(c.name)}</strong></button>`).join('')||'<div class="sms-empty">Aucun personnage associé à ton compte.</div>';
-    $('smsCharacterPickerGrid').querySelectorAll('[data-sms-pick-character]').forEach(b=>b.addEventListener('click',()=>{activeSmsSenderId=b.dataset.smsPickCharacter;$('smsSenderCharacter').value=activeSmsSenderId;updateOpenSmsSender();close('smsCharacterPicker');}));open('smsCharacterPicker');
+    $('smsCharacterPickerGrid').querySelectorAll('[data-sms-pick-character]').forEach(b=>b.addEventListener('click',()=>{activeSmsSenderId=b.dataset.smsPickCharacter;$('smsSenderCharacter').value=activeSmsSenderId;if(activeOpenSmsTopic)rememberSmsSender(activeOpenSmsTopic,activeSmsSenderId);updateOpenSmsSender();close('smsCharacterPicker');}));open('smsCharacterPicker');
   }
   function updateOpenSmsSender(){const c=smsCharacter(activeSmsSenderId);$('smsActiveAvatar').innerHTML=smsEscapeAvatar(c);$('smsSenderBadge').textContent=c?'Tu réponds en tant que '+c.name:'Choisis ton personnage';}
   async function loadSms(){
@@ -5248,7 +5280,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     $('smsThreads').innerHTML=openSmsTopics.map(t=>{const c=smsCharacter(t.author_character_id),last=openSmsReplies.filter(r=>String(r.topic_id)===String(t.id)).slice(-1)[0],preview=(last?.body||'Sujet ouvert').replace(/\s+/g,' ').slice(0,70),canDelete=String(t.author_user_id)===String(session?.user?.id)||['admin','moderator'].includes(String(myProfile?.role||'').toLowerCase());return `<div class="sms-thread-wrap"><button class="sms-thread ${String(t.id)===String(activeOpenSmsTopic)?'active':''}" type="button" data-sms-thread="${esc(t.id)}"><span class="sms-avatar">${smsEscapeAvatar(c)}</span><span class="sms-thread-copy"><strong>${esc(t.title)}</strong><small>${esc(c?.name||'Personnage')} · ${esc(preview)}</small><small class="sms-reply-count">${counts.get(String(t.id))||0} réponse(s)</small></span></button>${canDelete?`<button type="button" class="sms-topic-delete" data-sms-topic-delete="${esc(t.id)}" title="Supprimer définitivement ce sujet et toutes ses réponses" aria-label="Supprimer le sujet ${esc(t.title)}">⌫</button>`:''}</div>`}).join('')||'<div class="sms-empty">Aucun sujet pour le moment. Clique sur + pour lancer la première conversation. 🌸</div>';
     $('smsThreads').querySelectorAll('[data-sms-thread]').forEach(b=>b.addEventListener('click',()=>openSmsThread(b.dataset.smsThread)));
     $('smsThreads').querySelectorAll('[data-sms-topic-delete]').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();deleteOpenSmsTopic(b.dataset.smsTopicDelete)}));
-    if(activeOpenSmsTopic&&openSmsTopics.some(t=>String(t.id)===String(activeOpenSmsTopic)))renderOpenSmsTopic(activeOpenSmsTopic);else{$('smsComposeForm').hidden=true;$('smsConversationTitle').textContent='Choisis un sujet';$('smsChatSubtitle').textContent='Les réponses apparaîtront ici.';$('smsMessages').innerHTML='<div class="sms-empty">Choisis un sujet à gauche ou clique sur + pour en créer un.</div>';}
+    if(activeOpenSmsTopic&&openSmsTopics.some(t=>String(t.id)===String(activeOpenSmsTopic))){restoreSmsSender(activeOpenSmsTopic);renderOpenSmsTopic(activeOpenSmsTopic);}else{$('smsComposeForm').hidden=true;$('smsConversationTitle').textContent='Choisis un sujet';$('smsChatSubtitle').textContent='Les réponses apparaîtront ici.';$('smsMessages').innerHTML='<div class="sms-empty">Choisis un sujet à gauche ou clique sur + pour en créer un.</div>';}
     updateOpenSmsSender();
   }
   const smsReplyPageSize = 10;
@@ -5314,20 +5346,20 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     const {error}=await supabase.rpc('delete_open_sms_reply',{p_reply_id:replyId});if(error){smsNotice('Suppression impossible : '+error.message,'error');return;}smsNotice('Message supprimé.','success');await loadSms();await loadHomeSmsPreview();if(activeOpenSmsTopic)renderOpenSmsTopic(activeOpenSmsTopic);
   }
   function insertSmsEmoji(emoji){const area=$('smsBody');const start=area.selectionStart??area.value.length,end=area.selectionEnd??area.value.length;area.value=area.value.slice(0,start)+emoji+area.value.slice(end);area.focus();area.selectionStart=area.selectionEnd=start+emoji.length;}
-  function openSmsThread(topicId){renderOpenSmsTopic(topicId);if(window.matchMedia('(max-width:760px)').matches)$('smsMessages').scrollIntoView({behavior:'smooth',block:'start'});}
+  function openSmsThread(topicId){activeOpenSmsTopic=String(topicId);restoreSmsSender(topicId);renderOpenSmsTopic(topicId);if(window.matchMedia('(max-width:760px)').matches)$('smsMessages').scrollIntoView({behavior:'smooth',block:'start'});}
   async function createOpenSmsTopic(e){
     e.preventDefault();if(!session){showMessage('smsCreateTopicNotice','Connecte-toi pour créer un sujet.','error');return;}
     const characterId=$('smsSenderCharacter').value,title=$('smsTopicTitle').value.trim(),body=$('smsTopicBody').value.trim(),character=smsCharacter(characterId);
     if(!character||String(character.owner_id)!==String(session.user.id)){showMessage('smsCreateTopicNotice','Choisis un de tes personnages.','error');return;}if(!title||!body)return;
     const {data:topicId,error}=await supabase.rpc('create_open_sms_topic',{p_character_id:characterId,p_title:title,p_body:body});
     if(error){showMessage('smsCreateTopicNotice','Le sujet n’a pas pu être créé : '+error.message,'error');return;}
-    activeSmsSenderId=String(characterId);activeOpenSmsTopic=String(topicId);$('smsCreateTopicForm').reset();close('smsNewMessageOverlay');smsNotice('Sujet créé ! Les autres personnages peuvent maintenant répondre.','success');await loadSms();await loadHomeSmsPreview();if(topicId)openSmsThread(topicId);
+    activeSmsSenderId=String(characterId);activeOpenSmsTopic=String(topicId);rememberSmsSender(activeOpenSmsTopic,activeSmsSenderId);$('smsCreateTopicForm').reset();close('smsNewMessageOverlay');smsNotice('Sujet créé ! Les autres personnages peuvent maintenant répondre.','success');await loadSms();await loadHomeSmsPreview();if(topicId)openSmsThread(topicId);
   }
   async function replyToOpenSmsTopic(e){
     e.preventDefault();if(!session){smsNotice('Connecte-toi pour répondre.','error');return;}if(!activeOpenSmsTopic){smsNotice('Crée un sujet avec le bouton + NOUVEAU SUJET pour commencer.','error');return;}
     const characterId=String(activeSmsSenderId||$('smsSenderCharacter').value||''),textBody=$('smsBody').value.trim(),character=smsCharacter(characterId);if(!character||String(character.owner_id)!==String(session.user.id)){smsNotice('Choisis un de tes personnages en cliquant sur son avatar.','error');return;}if(!textBody&&!smsPendingPhoto)return;
     let body=textBody;if(smsPendingPhoto){smsNotice('Envoi de la photo…','success');const photoUrl=await smsUploadReplyPhoto(smsPendingPhoto);if(!photoUrl)return;body=(textBody?textBody+'\n\n':'')+'[[image:'+photoUrl+']]';}
-    const {error}=await supabase.rpc('reply_open_sms_topic',{p_topic_id:activeOpenSmsTopic,p_character_id:characterId,p_body:body});if(error){smsNotice('La réponse n’a pas pu être publiée : '+error.message,'error');return;}
+    rememberSmsSender(activeOpenSmsTopic,characterId);const {error}=await supabase.rpc('reply_open_sms_topic',{p_topic_id:activeOpenSmsTopic,p_character_id:characterId,p_body:body});if(error){smsNotice('La réponse n’a pas pu être publiée : '+error.message,'error');return;}
     $('smsBody').value='';smsResetPhoto();smsNotice('Réponse publiée 🌸','success');await loadSms();if(activeOpenSmsTopic)renderOpenSmsTopic(activeOpenSmsTopic);
   }
 
