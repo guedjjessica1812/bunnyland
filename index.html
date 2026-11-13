@@ -5106,7 +5106,10 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
       const avatar=c?.image_url||c?.cover_image||profile?.avatar_url||'';
       const face=c?.faceclaim||'Personnage';
       const avatarHtml=avatar?`<img src="${esc(avatar)}" alt="${esc(name)}">`:`<div class="post-avatar-placeholder">${esc((name||'花').charAt(0).toUpperCase())}</div>`;
-      const safeBody=esc(p.content||'').replace(/\*\*([^*\n]+?)\*\*/g,(_,text)=>`<span class=\"rp-dialogue\" style=\"color:${/^#[0-9a-fA-F]{6}$/.test(c?.dialogue_color||'')?c.dialogue_color:'#d9a7bb'}\">${text}</span>`).replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g,(_,before,text)=>`${before}<strong class=\"rp-narration-bold\">${text}</strong>`);
+      // La couleur est définie dans la fiche du personnage qui parle. Le !important
+      // inline garantit qu'aucune règle CSS du thème ne la remplace.
+      const dialogueColor=/^#[0-9a-fA-F]{6}$/.test(c?.dialogue_color||'')?c.dialogue_color:'#d9a7bb';
+      const safeBody=esc(p.content||'').replace(/\*\*([^*\n]+?)\*\*/g,(_,text)=>`<span class=\"rp-dialogue\" style=\"color:${dialogueColor} !important\">${text}</span>`).replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g,(_,before,text)=>`${before}<strong class=\"rp-narration-bold\">${text}</strong>`);
       const postReactions=rpReactions.filter(r=>String(r.post_id)===String(p.id));
       const heartCount=postReactions.filter(r=>r.reaction==='heart').length;
       const liked=!!session&&postReactions.some(r=>String(r.user_id)===String(session.user.id)&&r.reaction==='heart');
@@ -5822,7 +5825,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
 #postsList .bunnyland-rp-editorial .post-author time{font-size:11px!important;color:#946d8d!important}
 #postsList .bunnyland-rp-editorial .rp-post-body{font-size:16px!important;line-height:1.85!important;color:#49384d!important}
 #postsList .bunnyland-rp-editorial .rp-post-body p{color:#49384d!important}
-#postsList .bunnyland-rp-editorial .rp-dialogue{color:#bd7199!important}
+#postsList .bunnyland-rp-editorial .rp-dialogue{font-weight:700!important}
 #postsList .bunnyland-rp-editorial .rp-post-tools{margin-top:20px!important;padding-top:15px!important;border-top:1px solid #efd2e2!important;gap:9px!important}
 #postsList .bunnyland-rp-editorial .rp-post-tools button{background:#fffafd!important;color:#8e5a7c!important;border-color:#edbfd6!important;padding:9px 15px!important;font-size:12px!important}
 #postsList .bunnyland-rp-editorial .rp-post-tools button:hover{background:#f9e5ef!important;color:#603d58!important}
@@ -7376,7 +7379,7 @@ img,video,canvas,svg{max-width:100%}
 #postsList .bunnyland-rp-editorial .post-author span{color:#55324e!important}
 #postsList .bunnyland-rp-editorial .post-author time{color:#9e7898!important}
 #postsList .bunnyland-rp-editorial .rp-post-body,#postsList .bunnyland-rp-editorial .rp-post-body p{color:#5d4a60!important;overflow-wrap:anywhere!important;word-break:normal!important}
-#postsList .bunnyland-rp-editorial .rp-dialogue{color:#897bc0!important;font-weight:700!important}
+#postsList .bunnyland-rp-editorial .rp-dialogue{font-weight:700!important}
 #postsList .bunnyland-rp-editorial .rp-post-tools{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important}
 #postsList .bunnyland-rp-editorial .rp-post-tools button{border-radius:999px!important;background:#fffafd!important;color:#956082!important;border:1px solid #edbfd6!important}
 @media(max-width:760px){
