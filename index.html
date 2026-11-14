@@ -4154,7 +4154,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
       <div id="familyRpCategoryList" class="category-list"><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Famille" data-kind="rp"><div><h4>Famille Famille</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Famille" data-kind="rp"><div><h4>Famille Famille</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Zhu" data-kind="rp"><div><h4>Famille Zhu</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Famille" data-kind="rp"><div><h4>Famille Famille</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Jo" data-kind="rp"><div><h4>Famille Jo</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Kwon" data-kind="rp"><div><h4>Famille Kwon</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Ellis" data-kind="rp"><div><h4>Famille Ellis</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article><article class="category-card family-rp-card" tabindex="0" role="button" data-family="Famille" data-kind="rp"><div><h4>Famille</h4><p>Lire les sujets et ouvrir un RP dans cet espace.</p></div><div class="category-count">Voir les RP →</div></article></div>
       <div id="topicArea" class="hidden"><div class="toolbar"><h3 id="topicHeading">Les sujets</h3><button class="btn" id="backCategories">← Catégories RP</button></div><div id="topicList" class="topic-list"></div></div>
     </section>
-    <div id="postArea" class="hidden"><div class="toolbar"><h3 id="postHeading">Sujet</h3><button class="btn" id="backTopics">← Sujets</button></div><div id="postsList" class="posts-list"></div><form id="replyForm" class="reply-form"><div class="reply-character-picker"><span class="picker-label">Qui prend la parole ? Clique sur le portrait de ton personnage.</span><div id="replyCharacterChips" class="reply-character-list"><span class="community-loading">Chargement de tes personnages…</span></div><select class="field" id="replyCharacter" required aria-label="Personnage qui répond" style="display:none"><option value="">Choisis ton personnage…</option></select></div><label for="replyBody">Ta réponse</label><textarea class="field" id="replyBody" rows="5" required placeholder="Écris ici la réponse de ton personnage…"></textarea><button class="btn primary" type="submit">Publier la réponse</button></form></div>
+    <div id="postArea" class="hidden"><div class="toolbar"><h3 id="postHeading">Sujet</h3><div class="rp-view-actions"><button class="btn" id="refreshRpPosts" type="button">↻ Actualiser</button><button class="btn" id="backTopics">← Sujets</button></div></div><div id="rpOlderPostsWrap" class="rp-older-wrap hidden"><button class="btn" id="loadOlderRpPosts" type="button">← Voir les 10 réponses précédentes</button></div><div id="postsList" class="posts-list"></div><form id="replyForm" class="reply-form"><div class="reply-character-picker"><span class="picker-label">Qui prend la parole ? Clique sur le portrait de ton personnage.</span><div id="replyCharacterChips" class="reply-character-list"><span class="community-loading">Chargement de tes personnages…</span></div><select class="field" id="replyCharacter" required aria-label="Personnage qui répond" style="display:none"><option value="">Choisis ton personnage…</option></select></div><label for="replyBody">Ta réponse</label><textarea class="field" id="replyBody" rows="5" required placeholder="Écris ici la réponse de ton personnage…"></textarea><button class="btn primary" type="submit">Publier la réponse</button></form></div>
   </section>
   <section id="charactersSection">
     <div class="toolbar"><h3>Les personnages</h3><div class="filters"><input class="field search" id="search" placeholder="⌕  Chercher un personnage…"><select class="field" id="neighborhoodFilter"><option value="">Tous les quartiers / univers</option></select></div></div>
@@ -4288,6 +4288,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
 
   const $ = id => document.getElementById(id);
   let session = null, myProfile = null, allCharacters = [], forumCategories = [], activeCategory = null, activeTopic = null, activeFamily = null;
+  let rpAllPosts = [], rpVisiblePostCount = 10;
   const BUNNYLAND_FAMILIES = ['Chang-Soene','Im','Mo · Sawada','Zhu','Benzo','Launay','Tawill','University Dream','Ji','Shinigami','After Hour'];
   let bunnylandFamilyRows = [];
   const HANAMORI_FAMILIES = BUNNYLAND_FAMILIES; // Compatibilité interne temporaire ; ce fichier est Bunnyland.
@@ -5085,44 +5086,76 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     $('topicList').querySelectorAll('[data-delete-topic]').forEach(btn=>btn.addEventListener('click',async e=>{e.stopPropagation();await deleteRpTopic(btn.dataset.deleteTopic);}));
   }
 
-  async function loadPosts(topicId){
-    const {data:topic,error:topicError}=await supabase.from('rp_topics').select('id,title,family_id').eq('id',topicId).maybeSingle();if(topicError||!topic){showForumNotice('Impossible d’ouvrir ce sujet.','error');return;}activeTopic=topic;
-    $('topicArea').classList.add('hidden');$('postArea').classList.remove('hidden');$('postHeading').textContent=topic.title;$('postsList').innerHTML='<div class="empty">Chargement des messages…</div>';
-    const {data,error}=await supabase.from('rp_posts').select('id,author_id,character_id,content,created_at').eq('topic_id',topicId).order('created_at');
-    if(error){$('postsList').innerHTML=`<div class="notice error">Impossible de charger les messages : ${esc(error.message)}</div>`;return;}
-    const posts=data||[];
+  async function renderRpPosts(){
+    const posts=rpAllPosts.slice(-rpVisiblePostCount);
+    const olderWrap=$('rpOlderPostsWrap');
+    olderWrap.classList.toggle('hidden',rpAllPosts.length<=posts.length);
+    const olderButton=$('loadOlderRpPosts');
+    if(olderButton)olderButton.textContent=`← Voir les 10 réponses précédentes (${Math.min(10,rpAllPosts.length-posts.length)} disponibles)`;
+    if(!posts.length){$('postsList').innerHTML='<div class="empty">Aucun message pour le moment.</div>';return;}
     let rpReactions=[];
-    if(posts.length){const {data:reactionRows,error:reactionError}=await supabase.from('rp_post_likes').select('post_id,user_id,reaction').in('post_id',posts.map(p=>p.id));if(!reactionError)rpReactions=reactionRows||[];}
+    const {data:reactionRows,error:reactionError}=await supabase.from('rp_post_likes').select('post_id,user_id,reaction').in('post_id',posts.map(p=>p.id));
+    if(!reactionError)rpReactions=reactionRows||[];
     const charIds=[...new Set(posts.map(p=>p.character_id).filter(Boolean))];
     let charsById=new Map();
-    if(charIds.length){const {data:chars}=await supabase.from('characters').select('id,name,image_url,cover_image,faceclaim,dialogue_color').in('id',charIds);charsById=new Map((chars||[]).map(c=>[c.id,c]));}
+    if(charIds.length){const {data:chars}=await supabase.from('characters').select('id,name,image_url,cover_image,faceclaim,dialogue_color').in('id',charIds);charsById=new Map((chars||[]).map(c=>[String(c.id),c]));}
     const authorIds=[...new Set(posts.filter(p=>!p.character_id).map(p=>p.author_id).filter(Boolean))];
     let profilesById=new Map();
-    if(authorIds.length){const {data:profiles}=await supabase.from('profiles').select('id,username,display_name,avatar_url').in('id',authorIds);profilesById=new Map((profiles||[]).map(p=>[p.id,p]));}
+    if(authorIds.length){const {data:profiles}=await supabase.from('profiles').select('id,username,display_name,avatar_url').in('id',authorIds);profilesById=new Map((profiles||[]).map(p=>[String(p.id),p]));}
     $('postsList').innerHTML=posts.map(p=>{
-      const c=p.character_id?charsById.get(p.character_id):null;
-      const profile=profilesById.get(p.author_id);
+      const c=p.character_id?charsById.get(String(p.character_id)):null;
+      const profile=profilesById.get(String(p.author_id));
       const name=c?.name||profile?.display_name||profile?.username||'Personnage non renseigné';
       const avatar=c?.image_url||c?.cover_image||profile?.avatar_url||'';
       const face=c?.faceclaim||'Personnage';
       const avatarHtml=avatar?`<img src="${esc(avatar)}" alt="${esc(name)}">`:`<div class="post-avatar-placeholder">${esc((name||'花').charAt(0).toUpperCase())}</div>`;
-      // La couleur est définie dans la fiche du personnage qui parle. Le !important
-      // inline garantit qu'aucune règle CSS du thème ne la remplace.
-      const dialogueColor=/^#[0-9a-fA-F]{6}$/.test(c?.dialogue_color||'')?c.dialogue_color:'#d9a7bb';
-      const safeBody=esc(p.content||'').replace(/\*\*([^*\n]+?)\*\*/g,(_,text)=>`<span class=\"rp-dialogue\" style=\"color:${dialogueColor} !important\">${text}</span>`).replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g,(_,before,text)=>`${before}<strong class=\"rp-narration-bold\">${text}</strong>`);
+      const safeBody=esc(p.content||'').replace(/\*\*([^*\n]+?)\*\*/g,(_,text)=>`<span class="rp-dialogue" style="color:${/^#[0-9a-fA-F]{6}$/.test(c?.dialogue_color||'')?c.dialogue_color:'#d9a7bb'}">${text}</span>`).replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g,(_,before,text)=>`${before}<strong class="rp-narration-bold">${text}</strong>`);
       const postReactions=rpReactions.filter(r=>String(r.post_id)===String(p.id));
       const heartCount=postReactions.filter(r=>r.reaction==='heart').length;
       const liked=!!session&&postReactions.some(r=>String(r.user_id)===String(session.user.id)&&r.reaction==='heart');
       const canManage=!!session&&(String(p.author_id)===String(session.user.id)||['admin','moderator'].includes(String(myProfile?.role||'').toLowerCase()));
-      return `<article class="post-card bunnyland-rp-editorial" data-rp-post-card="${esc(p.id)}"><aside class="post-character">${avatarHtml}<strong>${esc(name)}</strong><small>${esc(face)}</small></aside><div class="post-content"><div class="post-kicker"><span>✿ BUNNYLAND · RP</span><span class="post-number">${String(posts.indexOf(p)+1).padStart(2,'0')}</span></div><div class="post-author"><span>${esc(name)}</span><time>${esc(new Date(p.created_at).toLocaleString('fr-FR'))}</time></div><div class="rp-post-body" data-rp-post-body="${esc(p.id)}"><p style="white-space:pre-wrap">${safeBody}</p></div><div class="rp-post-tools"><button type="button" class="rp-heart ${liked?'liked':''}" data-rp-heart="${esc(p.id)}" aria-pressed="${liked?'true':'false'}">${liked?'♥':'♡'} J’aime</button><span class="rp-heart-count" data-rp-heart-count="${esc(p.id)}">${heartCount?heartCount+' j’aime':'Soyez le premier à aimer'}</span>${canManage?`<button type="button" data-rp-edit="${esc(p.id)}">Modifier</button><button type="button" data-rp-delete="${esc(p.id)}">Supprimer</button>`:''}</div></div></article>`;
-    }).join('')||'<div class="empty">Aucun message pour le moment.</div>';
+      const number=rpAllPosts.findIndex(x=>String(x.id)===String(p.id))+1;
+      return `<article class="post-card bunnyland-rp-editorial" data-rp-post-card="${esc(p.id)}"><aside class="post-character">${avatarHtml}<strong>${esc(name)}</strong><small>${esc(face)}</small></aside><div class="post-content"><div class="post-kicker"><span>✿ BUNNYLAND · RP</span><span class="post-number">${String(number).padStart(2,'0')}</span></div><div class="post-author"><span>${esc(name)}</span><time>${esc(new Date(p.created_at).toLocaleString('fr-FR'))}</time></div><div class="rp-post-body" data-rp-post-body="${esc(p.id)}"><p style="white-space:pre-wrap">${safeBody}</p></div><div class="rp-post-tools"><button type="button" class="rp-heart ${liked?'liked':''}" data-rp-heart="${esc(p.id)}" aria-pressed="${liked?'true':'false'}">${liked?'♥':'♡'} J’aime</button><span class="rp-heart-count" data-rp-heart-count="${esc(p.id)}">${heartCount?heartCount+' j’aime':'Soyez le premier à aimer'}</span>${canManage?`<button type="button" data-rp-edit="${esc(p.id)}">Modifier</button><button type="button" data-rp-delete="${esc(p.id)}">Supprimer</button>`:''}</div></div></article>`;
+    }).join('');
     $('postsList').querySelectorAll('[data-rp-heart]').forEach(b=>b.addEventListener('click',()=>toggleRpHeart(b.dataset.rpHeart)));
     $('postsList').querySelectorAll('[data-rp-edit]').forEach(b=>b.addEventListener('click',()=>editRpPost(b.dataset.rpEdit)));
     $('postsList').querySelectorAll('[data-rp-delete]').forEach(b=>b.addEventListener('click',()=>deleteRpPost(b.dataset.rpDelete)));
-    $('replyForm').classList.toggle('hidden',!session||topic.status==='locked');
-    if(session&&topic.status!=='locked')await populateReplyCharacters();
   }
 
+  async function loadPosts(topicId, options={}){
+    const preserveScroll=!!options.preserveScroll;
+    const scrollY=preserveScroll?window.scrollY:0;
+    const {data:topic,error:topicError}=await supabase.from('rp_topics').select('id,title,family_id').eq('id',topicId).maybeSingle();
+    if(topicError||!topic){showForumNotice('Impossible d’ouvrir ce sujet.','error');return;}
+    activeTopic=topic;
+    if(!options.keepCount)rpVisiblePostCount=10;
+    $('topicArea').classList.add('hidden');$('postArea').classList.remove('hidden');$('postHeading').textContent=topic.title;
+    if(!options.preserveScroll)$('postsList').innerHTML='<div class="empty">Chargement des messages…</div>';
+    const {data,error}=await supabase.from('rp_posts').select('id,author_id,character_id,content,created_at').eq('topic_id',topicId).order('created_at',{ascending:true});
+    if(error){$('postsList').innerHTML=`<div class="notice error">Impossible de charger les messages : ${esc(error.message)}</div>`;return;}
+    rpAllPosts=data||[];
+    rpVisiblePostCount=Math.min(Math.max(10,rpVisiblePostCount),rpAllPosts.length||10);
+    await renderRpPosts();
+    $('replyForm').classList.toggle('hidden',!session||topic.status==='locked');
+    if(session&&topic.status!=='locked')await populateReplyCharacters();
+    if(preserveScroll)requestAnimationFrame(()=>window.scrollTo({top:scrollY,behavior:'instant'}));
+  }
+
+  $('refreshRpPosts')?.addEventListener('click',async()=>{
+    if(!activeTopic)return;
+    const button=$('refreshRpPosts');button.disabled=true;button.textContent='Actualisation…';
+    try{await loadPosts(activeTopic.id,{keepCount:true,preserveScroll:true});}
+    finally{button.disabled=false;button.textContent='↻ Actualiser';}
+  });
+  $('loadOlderRpPosts')?.addEventListener('click',async()=>{
+    if(!activeTopic||rpVisiblePostCount>=rpAllPosts.length)return;
+    const button=$('loadOlderRpPosts');const oldHeight=document.documentElement.scrollHeight;const oldTop=window.scrollY;
+    button.disabled=true;button.textContent='Chargement…';
+    rpVisiblePostCount=Math.min(rpVisiblePostCount+10,rpAllPosts.length);
+    await renderRpPosts();
+    button.disabled=false;
+    requestAnimationFrame(()=>window.scrollTo({top:oldTop+(document.documentElement.scrollHeight-oldHeight),behavior:'instant'}));
+  });
 
   async function toggleRpHeart(postId){
     if(!session){showForumNotice('Connecte-toi pour aimer un message.','error');return;}
@@ -5139,7 +5172,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
       result=await supabase.from('rp_post_likes').insert({post_id:postId,user_id:session.user.id,reaction:'heart'});
     }
     if(result.error){showForumNotice('La réaction n’a pas pu être enregistrée : '+result.error.message,'error');return;}
-    await loadPosts(activeTopic.id);
+    await loadPosts(activeTopic.id,{keepCount:true,preserveScroll:true});
   }
   async function editRpPost(postId){
     const {data:post,error}=await supabase.from('rp_posts').select('id,author_id,content').eq('id',postId).maybeSingle();
@@ -5150,7 +5183,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     if(bodyBox.querySelector('textarea'))return;
     bodyBox.innerHTML=`<textarea class="field rp-edit-area" maxlength="20000" aria-label="Modifier le message RP">${esc(post.content||'')}</textarea><div class="rp-post-tools"><button type="button" data-rp-save-edit="${esc(postId)}">Enregistrer</button><button type="button" data-rp-cancel-edit="${esc(postId)}">Annuler</button></div>`;
     bodyBox.querySelector('[data-rp-cancel-edit]').addEventListener('click',()=>loadPosts(activeTopic.id));
-    bodyBox.querySelector('[data-rp-save-edit]').addEventListener('click',async()=>{const value=bodyBox.querySelector('textarea').value.trim();if(!value){showForumNotice('Le message ne peut pas être vide.','error');return;}let saveQuery=supabase.from('rp_posts').update({content:value,updated_at:new Date().toISOString()}).eq('id',postId);if(String(post.author_id)!==String(session.user.id))saveQuery=saveQuery.eq('author_id',post.author_id);const {error:saveError}=await saveQuery;if(saveError){showForumNotice('Modification impossible : '+saveError.message,'error');return;}showForumNotice('Message RP modifié.','success');await loadPosts(activeTopic.id);});
+    bodyBox.querySelector('[data-rp-save-edit]').addEventListener('click',async()=>{const value=bodyBox.querySelector('textarea').value.trim();if(!value){showForumNotice('Le message ne peut pas être vide.','error');return;}let saveQuery=supabase.from('rp_posts').update({content:value,updated_at:new Date().toISOString()}).eq('id',postId);if(String(post.author_id)!==String(session.user.id))saveQuery=saveQuery.eq('author_id',post.author_id);const {error:saveError}=await saveQuery;if(saveError){showForumNotice('Modification impossible : '+saveError.message,'error');return;}showForumNotice('Message RP modifié.','success');await loadPosts(activeTopic.id,{keepCount:true,preserveScroll:true});});
   }
   async function deleteRpTopic(topicId){
     if(!session)return;
@@ -5172,11 +5205,22 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     if(!confirm('Supprimer définitivement ce message RP ? Cette action est irréversible.'))return;
     const {data:post,error:lookupError}=await supabase.from('rp_posts').select('id,author_id').eq('id',postId).maybeSingle();if(lookupError||!post){showForumNotice('Message introuvable ou inaccessible.','error');return;}const isModerator=['admin','moderator'].includes(String(myProfile?.role||'').toLowerCase());if(String(post.author_id)!==String(session.user.id)&&!isModerator){showForumNotice('Tu peux supprimer uniquement tes propres messages.','error');return;}let deleteQuery=supabase.from('rp_posts').delete().eq('id',postId);if(String(post.author_id)===String(session.user.id))deleteQuery=deleteQuery.eq('author_id',session.user.id);const {error}=await deleteQuery;
     if(error){showForumNotice('Suppression impossible : '+error.message,'error');return;}
-    showForumNotice('Message RP supprimé.','success');await loadPosts(activeTopic.id);
+    showForumNotice('Message RP supprimé.','success');await loadPosts(activeTopic.id,{keepCount:true,preserveScroll:true});
   }
 
   function rpOwnCharacters(){
     return (allCharacters||[]).filter(c=>session&&String(c.owner_id)===String(session.user.id));
+  }
+  // Le dernier personnage choisi pour répondre aux RP est conservé durablement,
+  // séparément pour chaque compte Bunnyland et partagé entre tous les sujets.
+  function rpReplyCharacterMemoryKey(){return 'bunnyland_reply_character_'+String(session?.user?.id||'guest');}
+  function getRememberedRpReplyCharacter(){
+    try{return localStorage.getItem(rpReplyCharacterMemoryKey())||sessionStorage.getItem('bunnylandReplyCharacterId')||'';}catch(_){return '';}
+  }
+  function rememberRpReplyCharacter(characterId){
+    if(!session?.user?.id||!characterId)return;
+    try{localStorage.setItem(rpReplyCharacterMemoryKey(),String(characterId));}catch(_){}
+    try{sessionStorage.setItem('bunnylandReplyCharacterId',String(characterId));}catch(_){}
   }
   function rpCharacterChipMarkup(c,selectedId){
     const selected=String(c.id)===String(selectedId);
@@ -5188,7 +5232,8 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     container.querySelectorAll('[data-rp-character]').forEach(button=>button.addEventListener('click',()=>{
       select.value=button.dataset.rpCharacter;
       container.querySelectorAll('[data-rp-character]').forEach(b=>b.setAttribute('aria-pressed',b===button?'true':'false'));
-      window.sessionStorage.setItem(selectId==='replyCharacter'?'bunnylandReplyCharacterId':'bunnylandTopicCharacterId',select.value);
+      if(selectId==='replyCharacter')rememberRpReplyCharacter(select.value);
+      else window.sessionStorage.setItem('bunnylandTopicCharacterId',select.value);
     }));
     if(preferredId && [...select.options].some(o=>o.value===String(preferredId))){
       select.value=String(preferredId);
@@ -5206,7 +5251,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
   }
   async function populateReplyCharacters(){
     const own=rpOwnCharacters(),select=$('replyCharacter'),container=$('replyCharacterChips');
-    const previous=window.sessionStorage.getItem('bunnylandReplyCharacterId')||'';
+    const previous=getRememberedRpReplyCharacter();
     select.innerHTML='<option value="">Choisis ton personnage…</option>'+own.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
     container.innerHTML=own.map(c=>rpCharacterChipMarkup(c,previous)).join('')||'<div class="empty">Aucun personnage associé à ton compte. Crée une fiche personnage avant de répondre.</div>';
     if(!own.length){select.value='';return;}
@@ -5214,8 +5259,8 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
     wireRpCharacterChips('replyCharacterChips','replyCharacter',preferred);
   }
 
-  $('topicCreateForm').addEventListener('submit',async e=>{e.preventDefault();if(!session){showMessage('topicCreateMessage','Connecte-toi pour créer un RP.','error');return;}const familyId=$('topicCategory').value;const family=bunnylandFamilyRows.find(f=>String(f.id)===String(familyId))?.name;const characterId=$('topicCharacter').value;const character=rpOwnCharacters().find(c=>String(c.id)===String(characterId));if(!character){showMessage('topicCreateMessage','Choisis le personnage qui ouvre ce RP.','error');return;}if(!family||!familyId){showMessage('topicCreateMessage','Impossible de créer le sujet : aucune catégorie technique disponible.','error');return;}const title=$('topicTitle').value.trim();const body=$('topicBody').value.trim();if(!title||!body)return;const slug=title.toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,140)+'-'+Date.now().toString(36);const {data:topic,error}=await supabase.from('rp_topics').insert({family_id:familyId,author_id:session.user.id,title}).select('id').single();if(error){showMessage('topicCreateMessage','Le sujet n’a pas pu être créé : '+error.message,'error');return;}const {error:postError}=await supabase.from('rp_posts').insert({topic_id:topic.id,author_id:session.user.id,character_id:characterId,content:body});if(postError){showMessage('topicCreateMessage','Le sujet a été créé, mais le premier message n’a pas pu être publié : '+postError.message,'error');return;}window.sessionStorage.setItem('bunnylandTopicCharacterId',characterId);window.sessionStorage.setItem('bunnylandReplyCharacterId',characterId);close('topicCreateOverlay');$('topicCreateForm').reset();await loadFamilyTopics(family,familyId);});
-  $('replyForm').addEventListener('submit',async e=>{e.preventDefault();if(!session||!activeTopic)return;const body=$('replyBody').value.trim();const characterId=$('replyCharacter').value;if(!body)return;if(!characterId){showForumNotice('Choisis le personnage qui écrit cette réponse.','error');return;}window.sessionStorage.setItem('bunnylandReplyCharacterId',characterId);const {error}=await supabase.from('rp_posts').insert({topic_id:activeTopic.id,author_id:session.user.id,character_id:characterId,content:body});if(error){showForumNotice('La réponse n’a pas pu être publiée : '+error.message,'error');return;}$('replyBody').value='';await loadPosts(activeTopic.id);});
+  $('topicCreateForm').addEventListener('submit',async e=>{e.preventDefault();if(!session){showMessage('topicCreateMessage','Connecte-toi pour créer un RP.','error');return;}const familyId=$('topicCategory').value;const family=bunnylandFamilyRows.find(f=>String(f.id)===String(familyId))?.name;const characterId=$('topicCharacter').value;const character=rpOwnCharacters().find(c=>String(c.id)===String(characterId));if(!character){showMessage('topicCreateMessage','Choisis le personnage qui ouvre ce RP.','error');return;}if(!family||!familyId){showMessage('topicCreateMessage','Impossible de créer le sujet : aucune catégorie technique disponible.','error');return;}const title=$('topicTitle').value.trim();const body=$('topicBody').value.trim();if(!title||!body)return;const slug=title.toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,140)+'-'+Date.now().toString(36);const {data:topic,error}=await supabase.from('rp_topics').insert({family_id:familyId,author_id:session.user.id,title}).select('id').single();if(error){showMessage('topicCreateMessage','Le sujet n’a pas pu être créé : '+error.message,'error');return;}const {error:postError}=await supabase.from('rp_posts').insert({topic_id:topic.id,author_id:session.user.id,character_id:characterId,content:body});if(postError){showMessage('topicCreateMessage','Le sujet a été créé, mais le premier message n’a pas pu être publié : '+postError.message,'error');return;}window.sessionStorage.setItem('bunnylandTopicCharacterId',characterId);rememberRpReplyCharacter(characterId);close('topicCreateOverlay');$('topicCreateForm').reset();await loadFamilyTopics(family,familyId);});
+  $('replyForm').addEventListener('submit',async e=>{e.preventDefault();if(!session||!activeTopic)return;const body=$('replyBody').value.trim();const characterId=$('replyCharacter').value;if(!body)return;if(!characterId){showForumNotice('Choisis le personnage qui écrit cette réponse.','error');return;}rememberRpReplyCharacter(characterId);const {error}=await supabase.from('rp_posts').insert({topic_id:activeTopic.id,author_id:session.user.id,character_id:characterId,content:body});if(error){showForumNotice('La réponse n’a pas pu être publiée : '+error.message,'error');return;}$('replyBody').value='';await loadPosts(activeTopic.id,{keepCount:true,preserveScroll:true});});
   let smsRows=[], activeSmsKey=null;
   function smsNotice(message,type=''){const el=$('smsNotice');el.textContent=message;el.className='notice'+(type?' '+type:'');el.classList.remove('hidden');}
   function smsCharacter(id){return allCharacters.find(c=>String(c.id)===String(id));}
@@ -5825,7 +5870,7 @@ body.day-mode #bunnyAdminPanel .admin-row-actions button,body.day-mode #bunnyAdm
 #postsList .bunnyland-rp-editorial .post-author time{font-size:11px!important;color:#946d8d!important}
 #postsList .bunnyland-rp-editorial .rp-post-body{font-size:16px!important;line-height:1.85!important;color:#49384d!important}
 #postsList .bunnyland-rp-editorial .rp-post-body p{color:#49384d!important}
-#postsList .bunnyland-rp-editorial .rp-dialogue{font-weight:700!important}
+#postsList .bunnyland-rp-editorial .rp-dialogue{color:#bd7199!important}
 #postsList .bunnyland-rp-editorial .rp-post-tools{margin-top:20px!important;padding-top:15px!important;border-top:1px solid #efd2e2!important;gap:9px!important}
 #postsList .bunnyland-rp-editorial .rp-post-tools button{background:#fffafd!important;color:#8e5a7c!important;border-color:#edbfd6!important;padding:9px 15px!important;font-size:12px!important}
 #postsList .bunnyland-rp-editorial .rp-post-tools button:hover{background:#f9e5ef!important;color:#603d58!important}
@@ -7379,7 +7424,7 @@ img,video,canvas,svg{max-width:100%}
 #postsList .bunnyland-rp-editorial .post-author span{color:#55324e!important}
 #postsList .bunnyland-rp-editorial .post-author time{color:#9e7898!important}
 #postsList .bunnyland-rp-editorial .rp-post-body,#postsList .bunnyland-rp-editorial .rp-post-body p{color:#5d4a60!important;overflow-wrap:anywhere!important;word-break:normal!important}
-#postsList .bunnyland-rp-editorial .rp-dialogue{font-weight:700!important}
+#postsList .bunnyland-rp-editorial .rp-dialogue{color:#897bc0!important;font-weight:700!important}
 #postsList .bunnyland-rp-editorial .rp-post-tools{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important}
 #postsList .bunnyland-rp-editorial .rp-post-tools button{border-radius:999px!important;background:#fffafd!important;color:#956082!important;border:1px solid #edbfd6!important}
 @media(max-width:760px){
@@ -7665,6 +7710,12 @@ body.day-mode #postsList .bunnyland-rp-editorial .post-content{background:#fff7f
 #cAvatarFileStatus{font-size:12px;color:var(--muted,#bda8b9);overflow-wrap:anywhere}
 #editOverlay .notice.success{background:#38202f!important;color:#f7eff3!important;border:1px solid #bd789f!important}
 @media(max-width:600px){.character-photo-tools{gap:8px}}
+
+/* Bunnyland RP : pagination des réponses et actualisation sans quitter le sujet */
+.rp-view-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rp-older-wrap{display:flex;justify-content:center;padding:10px 0 18px}
+.rp-older-wrap .btn,.rp-view-actions .btn{border-radius:999px}
+@media(max-width:600px){.rp-view-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.rp-view-actions .btn{width:100%;padding:9px 8px;font-size:12px}.rp-older-wrap .btn{width:100%}}
 </style>
 
 </body>
